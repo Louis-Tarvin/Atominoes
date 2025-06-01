@@ -1,8 +1,8 @@
-use bevy::prelude::*;
+use bevy::{prelude::*, render::view::RenderLayers};
 
 use super::animation::Animated;
 
-#[derive(Clone, Copy, Component)]
+#[derive(Clone, Copy, Component, PartialEq, Eq, PartialOrd)]
 pub enum AtomType {
     Basic,
     Splitting,
@@ -33,7 +33,7 @@ pub fn atom(
     atom_assets: &AtomAssets,
     texture_atlas_layouts: &mut Assets<TextureAtlasLayout>,
 ) -> impl Bundle {
-    let layout = TextureAtlasLayout::from_grid(UVec2::new(364, 304), 8, 1, None, None);
+    let layout = TextureAtlasLayout::from_grid(UVec2::new(364, 304), 9, 1, None, None);
     (
         Name::new("Basic atom"),
         Sprite::from_atlas_image(
@@ -50,5 +50,6 @@ pub fn atom(
         Animated::new(8),
         Transform::from_xyz(position.x as f32, position.y as f32, 0.0)
             .with_scale(Vec3::splat(0.002)),
+        RenderLayers::layer(2),
     )
 }

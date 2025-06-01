@@ -1,9 +1,12 @@
-use bevy::prelude::*;
+use bevy::{prelude::*, render::view::RenderLayers};
+
+use crate::screens::Screen;
 
 use super::{
     atom::{AtomAssets, AtomType, atom},
     movement::{CardinalDirection, Movement},
     state::GameState,
+    win_condition::goal,
 };
 
 #[derive(Resource, Default)]
@@ -11,6 +14,7 @@ pub(super) struct CurrentLevel(pub Option<Level>);
 
 pub(super) struct Level {
     pub atoms: Vec<LevelAtom>,
+    pub goals: Vec<LevelGoal>,
 }
 
 pub(super) struct LevelAtom {
@@ -41,6 +45,20 @@ impl LevelAtom {
     }
 }
 
+pub(super) struct LevelGoal {
+    pub atom_type: AtomType,
+    pub position: IVec2,
+}
+
+impl LevelGoal {
+    pub fn new<P: Into<IVec2>>(atom_type: AtomType, position: P) -> Self {
+        Self {
+            atom_type,
+            position: position.into(),
+        }
+    }
+}
+
 /// Marker component for entities that are part of the current level and thus need to be despawned
 /// when the level is unloaded.
 #[derive(Component)]
@@ -48,6 +66,7 @@ pub struct LevelEntity;
 
 pub(super) fn plugin(app: &mut App) {
     app.init_resource::<CurrentLevel>();
+    app.add_systems(OnEnter(Screen::Gameplay), draw_2d_grid);
     app.add_systems(OnEnter(GameState::Placement), initialise_level);
 }
 
@@ -83,5 +102,36 @@ fn initialise_level(
             entity.insert(velocity.clone());
         }
     }
+
+    // Spawn goal zones
+    for goal_zone in &level.goals {
+        commands.spawn((
+            goal(
+                goal_zone.atom_type,
+                goal_zone.position,
+                &atom_assets,
+                &mut texture_atlas_layouts,
+            ),
+            LevelEntity,
+        ));
+    }
     Ok(())
+}
+
+fn draw_2d_grid(mut commands: Commands, mut gizmo_assets: ResMut<Assets<GizmoAsset>>) {
+    let mut gizmo = GizmoAsset::new();
+    gizmo.grid_2d(
+        Isometry2d::IDENTITY,
+        UVec2::new(30, 20),
+        Vec2::splat(1.0),
+        LinearRgba::gray(0.05),
+    );
+    commands.spawn((
+        Gizmo {
+            handle: gizmo_assets.add(gizmo),
+            ..Default::default()
+        },
+        RenderLayers::layer(1),
+        StateScoped(Screen::Gameplay),
+    ));
 }

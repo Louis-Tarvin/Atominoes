@@ -13,7 +13,11 @@ mod menus;
 mod screens;
 mod theme;
 
-use bevy::{asset::AssetMetaCheck, prelude::*, render::camera::ScalingMode};
+use bevy::{
+    asset::AssetMetaCheck,
+    prelude::*,
+    render::{camera::ScalingMode, view::RenderLayers},
+};
 
 fn main() -> AppExit {
     App::new().add_plugins(AppPlugin).run()
@@ -100,9 +104,14 @@ struct Pause(pub bool);
 struct PausableSystems;
 
 fn spawn_camera(mut commands: Commands) {
+    // "Bottom" camera (for drawing gizmos behind other sprites)
     commands.spawn((
-        Name::new("Camera"),
+        Name::new("Bottom Camera"),
         Camera2d,
+        Camera {
+            order: 1,
+            ..Default::default()
+        },
         Projection::from(OrthographicProjection {
             scaling_mode: ScalingMode::AutoMin {
                 min_width: 20.0,
@@ -110,5 +119,24 @@ fn spawn_camera(mut commands: Commands) {
             },
             ..OrthographicProjection::default_2d()
         }),
+        RenderLayers::layer(1),
+    ));
+
+    // main camera
+    commands.spawn((
+        Name::new("Main Camera"),
+        Camera2d,
+        Camera {
+            order: 2,
+            ..Default::default()
+        },
+        Projection::from(OrthographicProjection {
+            scaling_mode: ScalingMode::AutoMin {
+                min_width: 20.0,
+                min_height: 12.0,
+            },
+            ..OrthographicProjection::default_2d()
+        }),
+        RenderLayers::layer(2),
     ));
 }
