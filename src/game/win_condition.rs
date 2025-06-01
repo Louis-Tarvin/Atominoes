@@ -1,6 +1,6 @@
 use bevy::{prelude::*, render::view::RenderLayers};
 
-use crate::{AppSystems, PausableSystems};
+use crate::{AppSystems, PausableSystems, screens::Screen};
 
 use super::{
     atom::{AtomAssets, AtomType},
@@ -45,6 +45,7 @@ pub fn goal(
         Transform::from_xyz(position.x as f32, position.y as f32, 0.0)
             .with_scale(Vec3::splat(0.002)),
         RenderLayers::layer(2),
+        StateScoped(Screen::Gameplay),
     )
 }
 

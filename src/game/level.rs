@@ -13,8 +13,10 @@ use super::{
 pub(super) struct CurrentLevel(pub Option<Level>);
 
 pub(super) struct Level {
+    pub sidebar_text: String,
     pub atoms: Vec<LevelAtom>,
     pub goals: Vec<LevelGoal>,
+    pub placeable_atoms: Vec<AtomType>,
 }
 
 pub(super) struct LevelAtom {
@@ -68,6 +70,7 @@ pub(super) fn plugin(app: &mut App) {
     app.init_resource::<CurrentLevel>();
     app.add_systems(OnEnter(Screen::Gameplay), draw_2d_grid);
     app.add_systems(OnEnter(GameState::Placement), initialise_level);
+    app.add_systems(Update, draw_arrows.run_if(in_state(GameState::Placement)));
 }
 
 fn initialise_level(
@@ -134,4 +137,16 @@ fn draw_2d_grid(mut commands: Commands, mut gizmo_assets: ResMut<Assets<GizmoAss
         RenderLayers::layer(1),
         StateScoped(Screen::Gameplay),
     ));
+}
+
+fn draw_arrows(mut gizmos: Gizmos, moving_atoms: Query<(&Movement, &Transform), With<AtomType>>) {
+    for (movement, transform) in moving_atoms.iter() {
+        let direction = movement.direction.to_velocity();
+        let position = transform.translation.xy();
+        gizmos.arrow_2d(
+            position + (direction * 0.3),
+            position + (direction * 1.2),
+            LinearRgba::rgb(0.4, 0.4, 0.8),
+        );
+    }
 }

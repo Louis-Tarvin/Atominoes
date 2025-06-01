@@ -77,7 +77,7 @@ impl Plugin for AppPlugin {
         app.configure_sets(Update, PausableSystems.run_if(in_state(Pause(false))));
 
         // Spawn the main camera.
-        app.add_systems(Startup, spawn_camera);
+        app.add_systems(Startup, (spawn_camera, set_gizmo_config));
     }
 }
 
@@ -104,6 +104,8 @@ struct Pause(pub bool);
 struct PausableSystems;
 
 fn spawn_camera(mut commands: Commands) {
+    let camera_width = 16.0;
+    let camera_height = 9.0;
     // "Bottom" camera (for drawing gizmos behind other sprites)
     commands.spawn((
         Name::new("Bottom Camera"),
@@ -114,8 +116,8 @@ fn spawn_camera(mut commands: Commands) {
         },
         Projection::from(OrthographicProjection {
             scaling_mode: ScalingMode::AutoMin {
-                min_width: 20.0,
-                min_height: 12.0,
+                min_width: camera_width,
+                min_height: camera_height,
             },
             ..OrthographicProjection::default_2d()
         }),
@@ -132,11 +134,16 @@ fn spawn_camera(mut commands: Commands) {
         },
         Projection::from(OrthographicProjection {
             scaling_mode: ScalingMode::AutoMin {
-                min_width: 20.0,
-                min_height: 12.0,
+                min_width: camera_width,
+                min_height: camera_height,
             },
             ..OrthographicProjection::default_2d()
         }),
         RenderLayers::layer(2),
     ));
+}
+
+fn set_gizmo_config(mut config_store: ResMut<GizmoConfigStore>) {
+    let (config, _) = config_store.config_mut::<DefaultGizmoConfigGroup>();
+    config.render_layers = RenderLayers::layer(2);
 }

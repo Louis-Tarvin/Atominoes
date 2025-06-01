@@ -1,5 +1,7 @@
 use bevy::{prelude::*, render::view::RenderLayers};
 
+use crate::screens::Screen;
+
 use super::animation::Animated;
 
 #[derive(Clone, Copy, Component, PartialEq, Eq, PartialOrd)]
@@ -35,7 +37,7 @@ pub fn atom(
 ) -> impl Bundle {
     let layout = TextureAtlasLayout::from_grid(UVec2::new(364, 304), 9, 1, None, None);
     (
-        Name::new("Basic atom"),
+        Name::new("Atom"),
         Sprite::from_atlas_image(
             match atom_type {
                 AtomType::Basic => atom_assets.basic.clone(),
@@ -51,5 +53,6 @@ pub fn atom(
         Transform::from_xyz(position.x as f32, position.y as f32, 0.0)
             .with_scale(Vec3::splat(0.002)),
         RenderLayers::layer(2),
+        StateScoped(Screen::Gameplay),
     )
 }
