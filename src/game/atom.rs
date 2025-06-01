@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 use super::animation::Animated;
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Component)]
 pub enum AtomType {
     Basic,
     Splitting,
@@ -46,6 +46,7 @@ pub fn atom(
                 index: 0,
             },
         ),
+        atom_type,
         Animated::new(8),
         Transform::from_xyz(position.x as f32, position.y as f32, 0.0)
             .with_scale(Vec3::splat(0.002)),
