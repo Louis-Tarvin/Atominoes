@@ -8,11 +8,12 @@ mod audio;
 mod demo;
 #[cfg(feature = "dev")]
 mod dev_tools;
+mod game;
 mod menus;
 mod screens;
 mod theme;
 
-use bevy::{asset::AssetMetaCheck, prelude::*};
+use bevy::{asset::AssetMetaCheck, prelude::*, render::camera::ScalingMode};
 
 fn main() -> AppExit {
     App::new().add_plugins(AppPlugin).run()
@@ -47,7 +48,8 @@ impl Plugin for AppPlugin {
         app.add_plugins((
             asset_tracking::plugin,
             audio::plugin,
-            demo::plugin,
+            // demo::plugin,
+            game::plugin,
             #[cfg(feature = "dev")]
             dev_tools::plugin,
             menus::plugin,
@@ -98,5 +100,15 @@ struct Pause(pub bool);
 struct PausableSystems;
 
 fn spawn_camera(mut commands: Commands) {
-    commands.spawn((Name::new("Camera"), Camera2d));
+    commands.spawn((
+        Name::new("Camera"),
+        Camera2d,
+        Projection::from(OrthographicProjection {
+            scaling_mode: ScalingMode::AutoMin {
+                min_width: 20.0,
+                min_height: 12.0,
+            },
+            ..OrthographicProjection::default_2d()
+        }),
+    ));
 }
