@@ -26,7 +26,7 @@ pub(super) fn sidebar() -> impl Bundle {
             padding: UiRect::all(Val::Px(24.0)),
             flex_direction: FlexDirection::Column,
             row_gap: Val::Px(16.0),
-            border: UiRect::left(Val::Px(2.0)),
+            border: UiRect::right(Val::Px(2.0)),
             ..Default::default()
         },
         BorderColor(ACCENT.into()),

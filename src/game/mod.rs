@@ -10,6 +10,7 @@ mod atom;
 mod collision;
 mod level;
 mod movement;
+mod placement;
 pub mod state;
 mod ui;
 mod win_condition;
@@ -22,6 +23,7 @@ pub(super) fn plugin(app: &mut App) {
         level::plugin,
         collision::plugin,
         win_condition::plugin,
+        placement::plugin,
         ui::plugin,
     ));
 

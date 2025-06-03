@@ -4,6 +4,7 @@ use crate::{AppSystems, PausableSystems, screens::Screen};
 
 use super::{
     atom::{AtomAssets, AtomType},
+    placement::GridPos,
     state::GameState,
 };
 
@@ -42,6 +43,7 @@ pub fn goal(
             ..default()
         },
         Goal(atom_type),
+        GridPos(position),
         Transform::from_xyz(position.x as f32, position.y as f32, 0.0)
             .with_scale(Vec3::splat(0.002)),
         RenderLayers::layer(2),

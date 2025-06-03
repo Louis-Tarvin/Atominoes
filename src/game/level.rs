@@ -93,12 +93,7 @@ fn initialise_level(
     // Spawn level atoms
     for level_atom in &level.atoms {
         let mut entity = commands.spawn((
-            atom(
-                level_atom.atom_type,
-                level_atom.position,
-                &atom_assets,
-                &mut texture_atlas_layouts,
-            ),
+            atom(level_atom.atom_type, level_atom.position, &atom_assets),
             LevelEntity,
         ));
         if let Some(velocity) = &level_atom.velocity {

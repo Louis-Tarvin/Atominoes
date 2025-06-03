@@ -38,7 +38,6 @@ fn handle_collision(
     trigger: Trigger<CollisionEvent>,
     mut commands: Commands,
     atom_assets: Res<AtomAssets>,
-    mut texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
 ) {
     let event = trigger.event();
 
@@ -60,12 +59,7 @@ fn handle_collision(
             let movement = event.movements.0.clone().or(event.movements.1.clone());
 
             let mut entity = commands.spawn((
-                atom(
-                    AtomType::Splitting,
-                    collision_ivec2,
-                    &atom_assets,
-                    &mut texture_atlas_layouts,
-                ),
+                atom(AtomType::Splitting, collision_ivec2, &atom_assets),
                 LevelEntity,
                 CollisionCooldown::default(),
             ));
@@ -85,12 +79,7 @@ fn handle_collision(
 
                 // Spawn first basic atom
                 commands.spawn((
-                    atom(
-                        AtomType::Basic,
-                        collision_ivec2,
-                        &atom_assets,
-                        &mut texture_atlas_layouts,
-                    ),
+                    atom(AtomType::Basic, collision_ivec2, &atom_assets),
                     Movement::new(dir1),
                     LevelEntity,
                     CollisionCooldown::default(),
@@ -98,12 +87,7 @@ fn handle_collision(
 
                 // Spawn second basic atom
                 commands.spawn((
-                    atom(
-                        AtomType::Basic,
-                        collision_ivec2,
-                        &atom_assets,
-                        &mut texture_atlas_layouts,
-                    ),
+                    atom(AtomType::Basic, collision_ivec2, &atom_assets),
                     Movement::new(dir2),
                     LevelEntity,
                     CollisionCooldown::default(),
@@ -112,12 +96,7 @@ fn handle_collision(
                 warn!("Collision between two stationary atoms. This shouldn't happen.");
                 for _ in 0..2 {
                     commands.spawn((
-                        atom(
-                            AtomType::Basic,
-                            collision_ivec2,
-                            &atom_assets,
-                            &mut texture_atlas_layouts,
-                        ),
+                        atom(AtomType::Basic, collision_ivec2, &atom_assets),
                         LevelEntity,
                     ));
                 }
