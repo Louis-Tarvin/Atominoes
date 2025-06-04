@@ -4,6 +4,7 @@ use crate::{AppSystems, PausableSystems, screens::Screen};
 
 use super::{
     atom::{AtomAssets, AtomType},
+    level::CurrentLevel,
     placement::GridPos,
     state::GameState,
 };
@@ -75,8 +76,12 @@ fn check_goal_collisions(
     }
 }
 
-fn check_win_condition(goals: Query<&Goal>, mut next_state: ResMut<NextState<GameState>>) {
-    if goals.is_empty() {
+fn check_win_condition(
+    goals: Query<&Goal>,
+    mut next_state: ResMut<NextState<GameState>>,
+    current_level: Res<CurrentLevel>,
+) {
+    if matches!(*current_level, CurrentLevel::Loaded { .. }) && goals.is_empty() {
         next_state.set(GameState::LevelComplete);
     }
 }

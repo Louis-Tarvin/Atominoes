@@ -1,6 +1,6 @@
-use atom::AtomAssets;
+use atom::{AtomAssets, AtomType};
 use bevy::prelude::*;
-use level::{CurrentLevel, LevelAssets};
+use level::{CurrentLevel, Level, LevelAssets, LevelAtom};
 
 use crate::{asset_tracking::LoadResource, screens::Screen};
 
@@ -28,9 +28,34 @@ pub(super) fn plugin(app: &mut App) {
 
     app.register_type::<AtomAssets>();
     app.load_resource::<AtomAssets>();
+    app.init_resource::<MenuSelection>();
     app.add_systems(OnEnter(Screen::Gameplay), init_level);
 }
 
-fn init_level(mut current_level: ResMut<CurrentLevel>, level_handles: Res<LevelAssets>) {
-    current_level.set_level(level_handles.levels[0].clone(), 0);
+#[derive(Resource, Default)]
+pub enum MenuSelection {
+    #[default]
+    Editor,
+    Level(usize),
+}
+
+fn init_level(
+    mut current_level: ResMut<CurrentLevel>,
+    level_handles: Res<LevelAssets>,
+    menu_selection: Res<MenuSelection>,
+) {
+    if let MenuSelection::Level(index) = *menu_selection {
+        current_level.set_level(level_handles.levels[index].clone(), index);
+    } else {
+        *current_level = CurrentLevel::Editing(Level {
+            sidebar_text: "Sandbox".to_string(),
+            atoms: vec![LevelAtom::new_with_velocity(
+                AtomType::Basic,
+                IVec2::new(-3, 0),
+                movement::CardinalDirection::E,
+            )],
+            goals: vec![],
+            placeable_atoms: vec![AtomType::Basic, AtomType::Splitting],
+        });
+    }
 }

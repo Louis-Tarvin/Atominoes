@@ -18,6 +18,8 @@ use bevy::{
     render::{camera::ScalingMode, view::RenderLayers},
 };
 
+pub const LEVELS: [&str; 2] = ["0.ron", "1.ron"];
+
 fn main() -> AppExit {
     App::new().add_plugins(AppPlugin).run()
 }

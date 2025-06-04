@@ -7,7 +7,7 @@ use bevy::{
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
-use crate::{asset_tracking::LoadResource, screens::Screen};
+use crate::{LEVELS, asset_tracking::LoadResource, screens::Screen};
 
 use super::{
     atom::{AtomAssets, AtomType, atom},
@@ -17,29 +17,46 @@ use super::{
 };
 
 #[derive(Resource, Default)]
-pub struct CurrentLevel {
-    level_handle: Option<Handle<Level>>,
-    level_index: Option<usize>,
+pub enum CurrentLevel {
+    #[default]
+    Uninitialised,
+    Loaded {
+        level_handle: Handle<Level>,
+        level_index: usize,
+    },
+    Editing(Level),
 }
 
 impl CurrentLevel {
     pub fn set_level(&mut self, handle: Handle<Level>, index: usize) {
-        self.level_handle = Some(handle);
-        self.level_index = Some(index);
+        *self = Self::Loaded {
+            level_handle: handle,
+            level_index: index,
+        };
     }
 
     pub fn get_level<'a>(
-        &self,
+        &'a self,
         level_assets: &'a Assets<Level>,
     ) -> Result<&'a Level, GetLevelError> {
-        let level_handle = self.level_handle.as_ref().ok_or(GetLevelError::NoLevel)?;
-        level_assets
-            .get(level_handle)
-            .ok_or(GetLevelError::InvalidHandle)
+        match self {
+            CurrentLevel::Uninitialised => Err(GetLevelError::NoLevel),
+            CurrentLevel::Loaded {
+                level_handle,
+                level_index: _,
+            } => level_assets
+                .get(level_handle)
+                .ok_or(GetLevelError::InvalidHandle),
+            CurrentLevel::Editing(level) => Ok(level),
+        }
     }
 
     pub fn get_index(&self) -> Option<usize> {
-        self.level_index
+        match self {
+            CurrentLevel::Uninitialised => None,
+            CurrentLevel::Loaded { level_index, .. } => Some(*level_index),
+            CurrentLevel::Editing(_) => None,
+        }
     }
 }
 
@@ -150,9 +167,11 @@ pub struct LevelAssets {
 impl FromWorld for LevelAssets {
     fn from_world(world: &mut World) -> Self {
         let assets = world.resource::<AssetServer>();
-        Self {
-            levels: vec![assets.load("levels/0.ron"), assets.load("levels/1.ron")],
+        let mut levels = Vec::new();
+        for level in LEVELS {
+            levels.push(assets.load(format!("levels/{}", level)));
         }
+        Self { levels }
     }
 }
 

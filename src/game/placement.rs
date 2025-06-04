@@ -9,9 +9,7 @@ use bevy::{
 use crate::{AppSystems, PausableSystems, screens::Screen};
 
 use super::{
-    animation::Animated,
-    atom::{AtomAssets, AtomType, atom},
-    state::GameState,
+    animation::Animated, atom::{atom, AtomAssets, AtomType}, level::{CurrentLevel, LevelAtom}, state::GameState
 };
 
 pub(super) fn plugin(app: &mut App) {
@@ -125,6 +123,7 @@ fn handle_place_atom(
     mut commands: Commands,
     ghost_query: Query<(Entity, &AtomType, &Transform), With<DraggingGhost>>,
     atom_assets: Res<AtomAssets>,
+    mut current_level: ResMut<CurrentLevel>,
 ) {
     if let Ok((entity, atom_type, transform)) = ghost_query.single() {
         // Despawn the ghost
@@ -135,6 +134,11 @@ fn handle_place_atom(
             transform.translation.y.round() as i32,
         );
         commands.spawn(atom(*atom_type, grid_pos, &atom_assets));
+        
+        // If we're editing a level, add the atom to the level data
+        if let CurrentLevel::Editing(level) = &mut *current_level {
+            level.atoms.push(LevelAtom::new(*atom_type, grid_pos));
+        }
     }
 }
 
