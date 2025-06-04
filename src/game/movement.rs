@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use serde::{Deserialize, Serialize};
 
 use crate::{AppSystems, PausableSystems};
 
@@ -14,7 +15,7 @@ pub(super) fn plugin(app: &mut App) {
     );
 }
 
-#[derive(Component, Clone)]
+#[derive(Component, Debug, Clone, Serialize, Deserialize)]
 pub struct Movement {
     pub direction: CardinalDirection,
     pub speed: f32,
@@ -43,7 +44,7 @@ impl Default for Movement {
 }
 
 #[allow(dead_code)]
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
 pub enum CardinalDirection {
     N,
     E,

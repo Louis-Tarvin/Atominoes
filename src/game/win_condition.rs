@@ -75,9 +75,8 @@ fn check_goal_collisions(
     }
 }
 
-fn check_win_condition(goals: Query<&Goal>) {
+fn check_win_condition(goals: Query<&Goal>, mut next_state: ResMut<NextState<GameState>>) {
     if goals.is_empty() {
-        // TODO: Handle win condition
-        info!("Win condition met!");
+        next_state.set(GameState::LevelComplete);
     }
 }

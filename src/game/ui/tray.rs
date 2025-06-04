@@ -4,6 +4,7 @@ use crate::{
     game::{
         CurrentLevel,
         atom::{AtomAssets, AtomType},
+        level::Level,
         placement::{DraggingState, atom_placement_ghost},
     },
     theme::{palette::*, prelude::InteractionPalette},
@@ -91,6 +92,7 @@ pub(super) fn update_drag_icons(
     tray_query: Option<Single<(Entity, Option<&Children>), With<UiTray>>>,
     atom_assets: Res<AtomAssets>,
     current_level: Res<CurrentLevel>,
+    level_assets: Res<Assets<Level>>,
 ) {
     if let Some((tray_entity, tray_children)) = tray_query.map(|q| q.into_inner()) {
         if let Some(children) = tray_children {
@@ -98,7 +100,7 @@ pub(super) fn update_drag_icons(
                 commands.entity(*child).despawn();
             }
         }
-        if let Some(level) = &current_level.0 {
+        if let Ok(level) = current_level.get_level(&level_assets) {
             commands.entity(tray_entity).with_children(|tray| {
                 for atom in &level.placeable_atoms {
                     tray.spawn(drag_icon(*atom, &atom_assets));

@@ -1,10 +1,11 @@
 use bevy::{prelude::*, render::view::RenderLayers};
+use serde::{Deserialize, Serialize};
 
 use crate::screens::Screen;
 
 use super::{animation::Animated, placement::GridPos};
 
-#[derive(Debug, Clone, Copy, Component, PartialEq, Eq, PartialOrd)]
+#[derive(Debug, Clone, Copy, Component, PartialEq, Eq, PartialOrd, Serialize, Deserialize)]
 pub enum AtomType {
     Basic,
     Splitting,

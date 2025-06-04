@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 use crate::{
-    game::level::CurrentLevel,
+    game::level::{CurrentLevel, Level},
     menus::Menu,
     screens::Screen,
     theme::{palette::*, widget},
@@ -67,10 +67,11 @@ pub(super) fn sidebar() -> impl Bundle {
 
 pub(super) fn update_sidebar_text(
     current_level: Res<CurrentLevel>,
+    level_assets: Res<Assets<Level>>,
     mut text_query: Query<&mut Text, With<UiSidebarText>>,
 ) {
     if let Ok(mut text) = text_query.single_mut() {
-        if let Some(level) = &current_level.0 {
+        if let Ok(level) = current_level.get_level(&level_assets) {
             text.0 = format!("{}", level.sidebar_text);
         } else {
             text.0 = "No level loaded".to_string();

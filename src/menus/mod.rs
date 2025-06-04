@@ -2,6 +2,7 @@
 
 mod credits;
 mod main;
+mod next_level;
 mod pause;
 mod settings;
 
@@ -15,6 +16,7 @@ pub(super) fn plugin(app: &mut App) {
         main::plugin,
         settings::plugin,
         pause::plugin,
+        next_level::plugin,
     ));
 }
 

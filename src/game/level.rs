@@ -1,6 +1,13 @@
-use bevy::{prelude::*, render::view::RenderLayers};
+use bevy::{
+    asset::{AssetLoader, LoadContext, io::Reader},
+    input::common_conditions::input_just_released,
+    prelude::*,
+    render::view::RenderLayers,
+};
+use serde::{Deserialize, Serialize};
+use thiserror::Error;
 
-use crate::screens::Screen;
+use crate::{asset_tracking::LoadResource, screens::Screen};
 
 use super::{
     atom::{AtomAssets, AtomType, atom},
@@ -10,21 +17,56 @@ use super::{
 };
 
 #[derive(Resource, Default)]
-pub(super) struct CurrentLevel(pub Option<Level>);
+pub struct CurrentLevel {
+    level_handle: Option<Handle<Level>>,
+    level_index: Option<usize>,
+}
 
-pub(super) struct Level {
+impl CurrentLevel {
+    pub fn set_level(&mut self, handle: Handle<Level>, index: usize) {
+        self.level_handle = Some(handle);
+        self.level_index = Some(index);
+    }
+
+    pub fn get_level<'a>(
+        &self,
+        level_assets: &'a Assets<Level>,
+    ) -> Result<&'a Level, GetLevelError> {
+        let level_handle = self.level_handle.as_ref().ok_or(GetLevelError::NoLevel)?;
+        level_assets
+            .get(level_handle)
+            .ok_or(GetLevelError::InvalidHandle)
+    }
+
+    pub fn get_index(&self) -> Option<usize> {
+        self.level_index
+    }
+}
+
+#[derive(Debug, Error)]
+pub enum GetLevelError {
+    #[error("Attempted to read level, but no level was loaded!")]
+    NoLevel,
+    #[error("Current level handle was invalid!")]
+    InvalidHandle,
+}
+
+#[derive(Asset, TypePath, Debug, Serialize, Deserialize)]
+pub struct Level {
     pub sidebar_text: String,
     pub atoms: Vec<LevelAtom>,
     pub goals: Vec<LevelGoal>,
     pub placeable_atoms: Vec<AtomType>,
 }
 
-pub(super) struct LevelAtom {
+#[derive(Serialize, Deserialize, Debug)]
+pub struct LevelAtom {
     pub atom_type: AtomType,
     pub position: IVec2,
     pub velocity: Option<Movement>,
 }
 
+#[allow(dead_code)]
 impl LevelAtom {
     pub fn new<P: Into<IVec2>>(atom_type: AtomType, position: P) -> Self {
         Self {
@@ -47,16 +89,69 @@ impl LevelAtom {
     }
 }
 
-pub(super) struct LevelGoal {
+#[derive(Serialize, Deserialize, Debug)]
+pub struct LevelGoal {
     pub atom_type: AtomType,
     pub position: IVec2,
 }
 
+#[allow(dead_code)]
 impl LevelGoal {
     pub fn new<P: Into<IVec2>>(atom_type: AtomType, position: P) -> Self {
         Self {
             atom_type,
             position: position.into(),
+        }
+    }
+}
+
+#[derive(Default)]
+struct LevelAssetLoader;
+
+#[non_exhaustive]
+#[derive(Debug, Error)]
+enum LevelAssetLoaderError {
+    /// An [IO](std::io) Error
+    #[error("Could not load asset: {0}")]
+    Io(#[from] std::io::Error),
+    /// A [RON](ron) Error
+    #[error("Could not parse RON: {0}")]
+    RonSpannedError(#[from] ron::error::SpannedError),
+}
+
+impl AssetLoader for LevelAssetLoader {
+    type Asset = Level;
+    type Settings = ();
+    type Error = LevelAssetLoaderError;
+    async fn load(
+        &self,
+        reader: &mut dyn Reader,
+        _settings: &(),
+        _load_context: &mut LoadContext<'_>,
+    ) -> Result<Self::Asset, Self::Error> {
+        let mut bytes = Vec::new();
+        reader.read_to_end(&mut bytes).await?;
+        let custom_asset = ron::de::from_bytes::<Level>(&bytes)?;
+        Ok(custom_asset)
+    }
+
+    fn extensions(&self) -> &[&str] {
+        &["ron"]
+    }
+}
+
+#[derive(Resource, Asset, Clone, Reflect)]
+#[reflect(Resource)]
+pub struct LevelAssets {
+    #[dependency]
+    pub levels: Vec<Handle<Level>>,
+}
+
+impl FromWorld for LevelAssets {
+    fn from_world(world: &mut World) -> Self {
+        let assets = world.resource::<AssetServer>();
+        Self {
+            levels: vec![assets.load("levels/0.ron"), assets.load("levels/1.ron")],
         }
     }
 }
@@ -67,15 +162,24 @@ impl LevelGoal {
 pub struct LevelEntity;
 
 pub(super) fn plugin(app: &mut App) {
+    app.init_asset::<Level>()
+        .init_asset_loader::<LevelAssetLoader>();
+    app.register_type::<LevelAssets>();
+    app.load_resource::<LevelAssets>();
     app.init_resource::<CurrentLevel>();
     app.add_systems(OnEnter(Screen::Gameplay), draw_2d_grid);
     app.add_systems(OnEnter(GameState::Placement), initialise_level);
     app.add_systems(Update, draw_arrows.run_if(in_state(GameState::Placement)));
+    app.add_systems(
+        Update,
+        print_level_ron.run_if(input_just_released(KeyCode::F2)),
+    );
 }
 
 fn initialise_level(
     mut commands: Commands,
     current_level: Res<CurrentLevel>,
+    level_assets: Res<Assets<Level>>,
     atom_assets: Res<AtomAssets>,
     mut texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
     level_entities: Query<Entity, With<LevelEntity>>,
@@ -85,10 +189,7 @@ fn initialise_level(
         commands.entity(entity).despawn();
     }
 
-    let level = current_level
-        .0
-        .as_ref()
-        .ok_or("Attempted to load level, but no level was loaded!")?;
+    let level = current_level.get_level(&level_assets)?;
 
     // Spawn level atoms
     for level_atom in &level.atoms {
@@ -144,4 +245,14 @@ fn draw_arrows(mut gizmos: Gizmos, moving_atoms: Query<(&Movement, &Transform), 
             LinearRgba::rgb(0.4, 0.4, 0.8),
         );
     }
+}
+
+fn print_level_ron(current_level: Res<CurrentLevel>, level_assets: Res<Assets<Level>>) -> Result {
+    let level = current_level.get_level(&level_assets)?;
+    println!(
+        "{}",
+        ron::ser::to_string_pretty(&level, ron::ser::PrettyConfig::default()).unwrap()
+    );
+
+    Ok(())
 }

@@ -1,0 +1,36 @@
+(
+    sidebar_text: "WOW! A SECOND LEVEL!",
+    atoms: [
+        (
+            atom_type: Splitting,
+            position: (2, 0),
+            velocity: None,
+        ),
+        (
+            atom_type: Basic,
+            position: (-2, 0),
+            velocity: Some((
+                direction: E,
+                speed: 2.0,
+            )),
+        ),
+        (
+            atom_type: Basic,
+            position: (3, 1),
+            velocity: None,
+        ),
+    ],
+    goals: [
+        (
+            atom_type: Splitting,
+            position: (4, 2),
+        ),
+        (
+            atom_type: Basic,
+            position: (3, -1),
+        ),
+    ],
+    placeable_atoms: [
+        Basic,
+    ],
+)

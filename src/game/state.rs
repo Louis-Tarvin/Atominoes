@@ -4,10 +4,12 @@ use crate::{AppSystems, screens::Screen};
 
 #[derive(SubStates, Copy, Clone, Eq, PartialEq, Hash, Debug, Default)]
 #[source(Screen = Screen::Gameplay)]
+#[states(scoped_entities)]
 pub enum GameState {
     #[default]
     Placement,
     Running,
+    LevelComplete,
 }
 
 pub(super) fn plugin(app: &mut App) {
@@ -29,6 +31,7 @@ fn toggle_game_state_system(
         let new_state = match current_state.get() {
             GameState::Placement => GameState::Running,
             GameState::Running => GameState::Placement,
+            GameState::LevelComplete => GameState::LevelComplete,
         };
         next_state.set(new_state);
     }
