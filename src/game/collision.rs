@@ -1,4 +1,4 @@
-use bevy::prelude::*;
+use bevy::{platform::collections::HashMap, prelude::*};
 
 use crate::{AppSystems, PausableSystems};
 
@@ -28,79 +28,122 @@ pub(super) fn plugin(app: &mut App) {
 
 #[derive(Event)]
 pub struct CollisionEvent {
-    pub entities: (Entity, Entity),
-    pub types: (AtomType, AtomType),
-    pub positions: (Vec3, Vec3),
-    pub movements: (Option<Movement>, Option<Movement>),
+    pub entities: Vec<Entity>,
+    pub position: IVec2,
 }
 
 fn handle_collision(
     trigger: Trigger<CollisionEvent>,
     mut commands: Commands,
     atom_assets: Res<AtomAssets>,
+    atom_query: Query<(&AtomType, Option<&Movement>)>,
 ) {
     let event = trigger.event();
 
-    // Despawn the colliding atoms
-    commands.entity(event.entities.0).despawn();
-    commands.entity(event.entities.1).despawn();
+    if event.entities.len() < 2 {
+        return;
+    }
 
-    // Calculate collision position (midpoint)
-    let collision_pos = (event.positions.0 + event.positions.1) / 2.0;
-    let collision_ivec2 = IVec2::new(
-        collision_pos.x.round() as i32,
-        collision_pos.y.round() as i32,
-    );
+    let mut atom_data = Vec::new();
 
-    match (event.types.0, event.types.1) {
-        // Both atoms are basic - fuse
-        (AtomType::Basic, AtomType::Basic) => {
-            // Determine movement direction (use the moving atom's direction)
-            let movement = event.movements.0.clone().or(event.movements.1.clone());
-
-            let mut entity = commands.spawn((
-                atom(AtomType::Splitting, collision_ivec2, &atom_assets),
-                LevelEntity,
-                CollisionCooldown::default(),
-            ));
-
-            if let Some(movement) = movement {
-                entity.insert(movement);
-            }
+    for &entity in &event.entities {
+        if let Ok((atom_type, movement)) = atom_query.get(entity) {
+            atom_data.push((entity, *atom_type, movement.cloned()));
         }
+    }
 
-        // One atom is splitting - split into two atoms at 45 degree angles
-        (AtomType::Splitting, _) | (_, AtomType::Splitting) => {
-            // Find the movement direction from either atom
-            let base_movement = event.movements.0.clone().or(event.movements.1.clone());
+    // Check for wall collisions first
+    let wall_count = atom_data
+        .iter()
+        .filter(|(_, t, _)| *t == AtomType::Wall)
+        .count();
 
-            if let Some(movement) = base_movement {
-                let (dir1, dir2) = get_split_directions(movement.direction);
+    if wall_count > 0 {
+        // Handle wall collision - bounce non-wall atoms
+        for (entity, atom_type, movement) in atom_data {
+            if atom_type == AtomType::Wall {
+                // Keep walls intact - don't despawn them
+                continue;
+            } else if let Some(mut movement) = movement {
+                // Bounce the atom by reversing its direction
+                movement.direction = movement.direction.opposite();
 
-                // Spawn first basic atom
+                // Despawn the original atom
+                commands.entity(entity).despawn();
+
+                // Spawn bounced atom
                 commands.spawn((
-                    atom(AtomType::Basic, collision_ivec2, &atom_assets),
-                    Movement::new(dir1),
-                    LevelEntity,
-                    CollisionCooldown::default(),
-                ));
-
-                // Spawn second basic atom
-                commands.spawn((
-                    atom(AtomType::Basic, collision_ivec2, &atom_assets),
-                    Movement::new(dir2),
+                    atom(atom_type, event.position, &atom_assets),
+                    movement,
                     LevelEntity,
                     CollisionCooldown::default(),
                 ));
             } else {
-                warn!("Collision between two stationary atoms. This shouldn't happen.");
-                for _ in 0..2 {
-                    commands.spawn((
-                        atom(AtomType::Basic, collision_ivec2, &atom_assets),
-                        LevelEntity,
-                    ));
-                }
+                // Stationary atom hitting wall - just despawn it
+                commands.entity(entity).despawn();
             }
+        }
+        return;
+    }
+
+    // Handle normal collisions (no walls involved)
+    // Despawn all colliding atoms
+    for &entity in &event.entities {
+        commands.entity(entity).despawn();
+    }
+
+    // Handle collision based on atom types
+    let basic_count = atom_data
+        .iter()
+        .filter(|(_, t, _)| *t == AtomType::Basic)
+        .count();
+    let splitting_count = atom_data
+        .iter()
+        .filter(|(_, t, _)| *t == AtomType::Splitting)
+        .count();
+
+    if splitting_count > 0 {
+        // Any splitting atom causes a split reaction
+        let movement = atom_data.iter().find_map(|(_, _, m)| m.as_ref()).cloned();
+
+        if let Some(movement) = movement {
+            let (dir1, dir2) = get_split_directions(movement.direction);
+
+            // Spawn basic atoms at split angles
+            commands.spawn((
+                atom(AtomType::Basic, event.position, &atom_assets),
+                Movement::new(dir1),
+                LevelEntity,
+                CollisionCooldown::default(),
+            ));
+
+            commands.spawn((
+                atom(AtomType::Basic, event.position, &atom_assets),
+                Movement::new(dir2),
+                LevelEntity,
+                CollisionCooldown::default(),
+            ));
+        } else {
+            // Fallback for stationary splitting atoms
+            for _ in 0..2 {
+                commands.spawn((
+                    atom(AtomType::Basic, event.position, &atom_assets),
+                    LevelEntity,
+                ));
+            }
+        }
+    } else if basic_count >= 2 {
+        // Multiple basic atoms fuse into a splitting atom
+        let movement = atom_data.iter().find_map(|(_, _, m)| m.as_ref()).cloned();
+
+        let mut entity = commands.spawn((
+            atom(AtomType::Splitting, event.position, &atom_assets),
+            LevelEntity,
+            CollisionCooldown::default(),
+        ));
+
+        if let Some(movement) = movement {
+            entity.insert(movement);
         }
     }
 }
@@ -143,24 +186,50 @@ fn tick_collision_cooldown(
 }
 
 fn detect_atom_collisions(
-    query: Query<(Entity, &Transform, &AtomType, Option<&Movement>), Without<CollisionCooldown>>,
+    moving_atoms_query: Query<
+        (Entity, &Transform, &Movement),
+        (With<AtomType>, Without<CollisionCooldown>),
+    >,
+    stationary_atoms_query: Query<(Entity, &Transform), (With<AtomType>, Without<Movement>)>,
     mut commands: Commands,
 ) {
-    let atoms: Vec<_> = query.iter().collect();
+    let epsilon = 0.05;
+    let mut potentially_colliding_positions: HashMap<IVec2, Vec<Entity>> = HashMap::new();
 
-    for (i, (entity_a, transform_a, atom_type_a, movement_a)) in atoms.iter().enumerate() {
-        for (entity_b, transform_b, atom_type_b, movement_b) in atoms.iter().skip(i + 1) {
-            let distance = transform_a.translation.distance(transform_b.translation);
-            let collision_threshold = 0.5;
+    for (moving_entity, moving_transform, _) in moving_atoms_query.iter() {
+        // check if we're at a grid intersection (only time that collisions should occur)
+        let pos = moving_transform.translation;
+        let nearest_x = pos.x.round();
+        let nearest_y = pos.y.round();
+        let dx = (pos.x - nearest_x).abs();
+        let dy = (pos.y - nearest_y).abs();
 
-            if distance < collision_threshold {
-                commands.trigger(CollisionEvent {
-                    entities: (*entity_a, *entity_b),
-                    types: (**atom_type_a, **atom_type_b),
-                    positions: (transform_a.translation, transform_b.translation),
-                    movements: (movement_a.cloned(), movement_b.cloned()),
-                });
-            }
+        if dx <= epsilon && dy <= epsilon {
+            potentially_colliding_positions
+                .entry(IVec2::new(nearest_x as i32, nearest_y as i32))
+                .or_default()
+                .push(moving_entity);
+        }
+    }
+
+    if !potentially_colliding_positions.is_empty() {
+        for (entity, transform) in stationary_atoms_query.iter() {
+            let pos = transform.translation;
+            // It's assumed that stationary atoms are already at grid intersections
+            potentially_colliding_positions
+                .entry(IVec2::new(pos.x.round() as i32, pos.y.round() as i32))
+                .or_default()
+                .push(entity);
+        }
+    }
+
+    for (pos, entities) in potentially_colliding_positions.into_iter() {
+        if entities.len() > 1 {
+            debug!("Collision at {pos}");
+            commands.trigger(CollisionEvent {
+                entities,
+                position: pos,
+            });
         }
     }
 }

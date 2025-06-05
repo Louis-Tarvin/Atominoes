@@ -9,6 +9,38 @@ use super::{animation::Animated, placement::GridPos};
 pub enum AtomType {
     Basic,
     Splitting,
+    Wall,
+}
+
+impl AtomType {
+    pub fn get_image_handle(&self, atom_assets: &AtomAssets) -> Handle<Image> {
+        match self {
+            AtomType::Basic => atom_assets.basic.clone(),
+            AtomType::Splitting => atom_assets.splitting.clone(),
+            AtomType::Wall => atom_assets.wall.clone(),
+        }
+    }
+
+    pub fn get_sprite(&self, atom_assets: &AtomAssets) -> Sprite {
+        Sprite::from_atlas_image(
+            self.get_image_handle(atom_assets),
+            TextureAtlas {
+                layout: atom_assets.atlas_layout.clone(),
+                index: 0,
+            },
+        )
+    }
+    pub fn get_ghost_sprite(&self, atom_assets: &AtomAssets) -> Sprite {
+        Sprite {
+            image: self.get_image_handle(atom_assets),
+            texture_atlas: Some(TextureAtlas {
+                layout: atom_assets.atlas_layout.clone(),
+                index: 8,
+            }),
+            color: Color::srgba(1.0, 1.0, 1.0, 0.5), // 50% transparent
+            ..Default::default()
+        }
+    }
 }
 
 #[derive(Resource, Asset, Clone, Reflect)]
@@ -19,6 +51,8 @@ pub struct AtomAssets {
     pub basic: Handle<Image>,
     #[dependency]
     pub splitting: Handle<Image>,
+    #[dependency]
+    pub wall: Handle<Image>,
 }
 
 impl FromWorld for AtomAssets {
@@ -38,6 +72,7 @@ impl FromWorld for AtomAssets {
             atlas_layout,
             basic: assets.load("images/atom1.png"),
             splitting: assets.load("images/atom2.png"),
+            wall: assets.load("images/atom3.png"),
         }
     }
 }
@@ -45,16 +80,7 @@ impl FromWorld for AtomAssets {
 pub fn atom(atom_type: AtomType, position: IVec2, atom_assets: &AtomAssets) -> impl Bundle {
     (
         Name::new("Atom"),
-        Sprite::from_atlas_image(
-            match atom_type {
-                AtomType::Basic => atom_assets.basic.clone(),
-                AtomType::Splitting => atom_assets.splitting.clone(),
-            },
-            TextureAtlas {
-                layout: atom_assets.atlas_layout.clone(),
-                index: 0,
-            },
-        ),
+        atom_type.get_sprite(atom_assets),
         atom_type,
         GridPos(position),
         Animated::new(8),

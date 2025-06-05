@@ -33,5 +33,6 @@
     placeable_atoms: [
         Basic,
         Splitting,
+        Wall,
     ],
 )

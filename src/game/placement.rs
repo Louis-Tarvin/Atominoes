@@ -9,7 +9,10 @@ use bevy::{
 use crate::{AppSystems, PausableSystems, screens::Screen};
 
 use super::{
-    animation::Animated, atom::{atom, AtomAssets, AtomType}, level::{CurrentLevel, LevelAtom}, state::GameState
+    animation::Animated,
+    atom::{AtomAssets, AtomType, atom},
+    level::{CurrentLevel, LevelAtom, LevelEntity},
+    state::GameState,
 };
 
 pub(super) fn plugin(app: &mut App) {
@@ -96,16 +99,7 @@ pub fn atom_placement_ghost(
     *dragging_state = DraggingState::Held(0.0);
     (
         Name::new("Placement Ghost"),
-        Sprite::from_atlas_image(
-            match atom_type {
-                AtomType::Basic => atom_assets.basic.clone(),
-                AtomType::Splitting => atom_assets.splitting.clone(),
-            },
-            TextureAtlas {
-                layout: atom_assets.atlas_layout.clone(),
-                index: 0,
-            },
-        ),
+        atom_type.get_sprite(atom_assets),
         atom_type,
         DraggingGhost,
         Animated::new(8),
@@ -133,11 +127,12 @@ fn handle_place_atom(
             transform.translation.x.round() as i32,
             transform.translation.y.round() as i32,
         );
-        commands.spawn(atom(*atom_type, grid_pos, &atom_assets));
-        
+        let mut entity = commands.spawn(atom(*atom_type, grid_pos, &atom_assets));
+
         // If we're editing a level, add the atom to the level data
         if let CurrentLevel::Editing(level) = &mut *current_level {
             level.atoms.push(LevelAtom::new(*atom_type, grid_pos));
+            entity.insert(LevelEntity);
         }
     }
 }

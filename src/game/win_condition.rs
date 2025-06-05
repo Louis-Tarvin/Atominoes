@@ -22,27 +22,10 @@ pub(super) fn plugin(app: &mut App) {
     );
 }
 
-pub fn goal(
-    atom_type: AtomType,
-    position: IVec2,
-    atom_assets: &AtomAssets,
-    texture_atlas_layouts: &mut Assets<TextureAtlasLayout>,
-) -> impl Bundle {
-    let layout = TextureAtlasLayout::from_grid(UVec2::new(364, 304), 9, 1, None, None);
+pub fn goal(atom_type: AtomType, position: IVec2, atom_assets: &AtomAssets) -> impl Bundle {
     (
         Name::new("goal"),
-        Sprite {
-            image: match atom_type {
-                AtomType::Basic => atom_assets.basic.clone(),
-                AtomType::Splitting => atom_assets.splitting.clone(),
-            },
-            color: Color::srgba(1.0, 1.0, 1.0, 0.5), // 50% transparent
-            texture_atlas: Some(TextureAtlas {
-                layout: texture_atlas_layouts.add(layout),
-                index: 8,
-            }),
-            ..default()
-        },
+        atom_type.get_ghost_sprite(atom_assets),
         Goal(atom_type),
         GridPos(position),
         Transform::from_xyz(position.x as f32, position.y as f32, 0.0)

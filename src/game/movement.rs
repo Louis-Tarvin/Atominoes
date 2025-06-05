@@ -69,6 +69,19 @@ impl CardinalDirection {
             CardinalDirection::NW => Vec2::new(-1.0, 1.0).normalize(),
         }
     }
+
+    pub fn opposite(&self) -> Self {
+        match self {
+            CardinalDirection::N => CardinalDirection::S,
+            CardinalDirection::E => CardinalDirection::W,
+            CardinalDirection::S => CardinalDirection::N,
+            CardinalDirection::W => CardinalDirection::E,
+            CardinalDirection::NE => CardinalDirection::SW,
+            CardinalDirection::SE => CardinalDirection::NW,
+            CardinalDirection::SW => CardinalDirection::NE,
+            CardinalDirection::NW => CardinalDirection::SE,
+        }
+    }
 }
 
 fn move_atoms_system(mut query: Query<(&mut Transform, &Movement)>, time: Res<Time>) {

@@ -51,10 +51,7 @@ fn drag_icon(atom_type: AtomType, atom_assets: &AtomAssets) -> impl Bundle {
                         ..Default::default()
                     },
                     ImageNode {
-                        image: match atom_type {
-                            AtomType::Basic => atom_assets.basic.clone(),
-                            AtomType::Splitting => atom_assets.splitting.clone(),
-                        },
+                        image: atom_type.get_image_handle(&atom_assets),
                         texture_atlas: Some(TextureAtlas {
                             layout: atom_assets.atlas_layout.clone(),
                             index: 8,

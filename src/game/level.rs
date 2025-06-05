@@ -200,7 +200,6 @@ fn initialise_level(
     current_level: Res<CurrentLevel>,
     level_assets: Res<Assets<Level>>,
     atom_assets: Res<AtomAssets>,
-    mut texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
     level_entities: Query<Entity, With<LevelEntity>>,
 ) -> Result {
     // First clean up existing level entities
@@ -224,12 +223,7 @@ fn initialise_level(
     // Spawn goal zones
     for goal_zone in &level.goals {
         commands.spawn((
-            goal(
-                goal_zone.atom_type,
-                goal_zone.position,
-                &atom_assets,
-                &mut texture_atlas_layouts,
-            ),
+            goal(goal_zone.atom_type, goal_zone.position, &atom_assets),
             LevelEntity,
         ));
     }
