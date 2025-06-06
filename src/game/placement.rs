@@ -24,7 +24,10 @@ pub(super) fn plugin(app: &mut App) {
     app.add_systems(Update, update_held_timer.in_set(AppSystems::TickTimers));
     app.add_systems(
         Update,
-        update_drag_ghost_position_on_mouse_move
+        (
+            update_drag_ghost_position_on_mouse_move,
+            delete_atom_on_rightclick,
+        )
             .run_if(in_state(GameState::Placement))
             .in_set(AppSystems::Update)
             .in_set(PausableSystems),
@@ -173,5 +176,50 @@ fn update_dragging_state(
     {
         *dragging_state = DraggingState::NotDragging;
         commands.trigger(PlaceGhostAtom);
+    }
+}
+
+fn delete_atom_on_rightclick(
+    buttons: Res<ButtonInput<MouseButton>>,
+    window: Single<&Window, With<PrimaryWindow>>,
+    camera_query: Query<(&Camera, &GlobalTransform), With<Camera2d>>,
+    atoms_query: Query<(Entity, &Transform, Option<&LevelEntity>), With<AtomType>>,
+    mut current_level: ResMut<CurrentLevel>,
+    mut commands: Commands,
+) {
+    if buttons.just_released(MouseButton::Right) {
+        if let Some(mouse_pos) = window.cursor_position() {
+            if let Some((camera, camera_transform)) =
+                camera_query.iter().find(|(cam, _)| cam.order == 2)
+            {
+                // Convert screen coordinates to world coordinates
+                if let Ok(world_pos) = camera.viewport_to_world_2d(camera_transform, mouse_pos) {
+                    let nearest_grid_pos =
+                        IVec2::new(world_pos.x.round() as i32, world_pos.y.round() as i32);
+                    for (entity, transform, maybe_level_entity) in atoms_query {
+                        let nearest_atom_grid_pos = IVec2::new(
+                            transform.translation.x.round() as i32,
+                            transform.translation.y.round() as i32,
+                        );
+                        if let CurrentLevel::Editing(level) = &mut *current_level {
+                            if nearest_grid_pos == nearest_atom_grid_pos {
+                                commands.entity(entity).despawn();
+                                if level.remove_atom_at_position(nearest_grid_pos).is_none() {
+                                    warn!(
+                                        "Deleted atom while editing a level, but the atom didn't exist in the level!"
+                                    );
+                                }
+                                return;
+                            }
+                        } else if maybe_level_entity.is_none()
+                            && nearest_grid_pos == nearest_atom_grid_pos
+                        {
+                            commands.entity(entity).despawn();
+                            return;
+                        }
+                    }
+                }
+            }
+        }
     }
 }

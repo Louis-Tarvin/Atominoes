@@ -76,6 +76,16 @@ pub struct Level {
     pub placeable_atoms: Vec<AtomType>,
 }
 
+impl Level {
+    pub fn remove_atom_at_position(&mut self, position: IVec2) -> Option<LevelAtom> {
+        if let Some(index) = self.atoms.iter().position(|atom| atom.position == position) {
+            Some(self.atoms.remove(index))
+        } else {
+            None
+        }
+    }
+}
+
 #[derive(Serialize, Deserialize, Debug)]
 pub struct LevelAtom {
     pub atom_type: AtomType,
