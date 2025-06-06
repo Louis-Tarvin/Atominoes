@@ -1,5 +1,5 @@
 (
-    sidebar_text: "WOW! A SECOND LEVEL!",
+    sidebar_text: "Create a new type of atom",
     atoms: [
         (
             atom_type: Basic,
@@ -10,16 +10,7 @@
             )),
         ),
     ],
-    goal: ReachPositions([
-        (
-            atom_type: Splitting,
-            position: (4, 2),
-        ),
-        (
-            atom_type: Basic,
-            position: (3, -1),
-        ),
-    ]),
+    goal: CreateAtom(Reactive),
     placeable_atoms: [
         Basic,
         Splitting,

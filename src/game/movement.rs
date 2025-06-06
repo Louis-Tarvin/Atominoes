@@ -82,6 +82,32 @@ impl CardinalDirection {
             CardinalDirection::NW => CardinalDirection::SE,
         }
     }
+
+    pub fn clockwise(&self) -> Self {
+        match self {
+            CardinalDirection::N => CardinalDirection::NE,
+            CardinalDirection::NE => CardinalDirection::E,
+            CardinalDirection::E => CardinalDirection::SE,
+            CardinalDirection::SE => CardinalDirection::S,
+            CardinalDirection::S => CardinalDirection::SW,
+            CardinalDirection::SW => CardinalDirection::W,
+            CardinalDirection::W => CardinalDirection::NW,
+            CardinalDirection::NW => CardinalDirection::N,
+        }
+    }
+
+    pub fn anticlockwise(&self) -> Self {
+        match self {
+            CardinalDirection::N => CardinalDirection::NW,
+            CardinalDirection::NW => CardinalDirection::W,
+            CardinalDirection::W => CardinalDirection::SW,
+            CardinalDirection::SW => CardinalDirection::S,
+            CardinalDirection::S => CardinalDirection::SE,
+            CardinalDirection::SE => CardinalDirection::E,
+            CardinalDirection::E => CardinalDirection::NE,
+            CardinalDirection::NE => CardinalDirection::N,
+        }
+    }
 }
 
 fn move_atoms_system(mut query: Query<(&mut Transform, &Movement)>, time: Res<Time>) {

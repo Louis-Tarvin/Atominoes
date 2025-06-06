@@ -72,7 +72,7 @@ pub enum GetLevelError {
 pub struct Level {
     pub sidebar_text: String,
     pub atoms: Vec<LevelAtom>,
-    pub goals: Vec<LevelGoal>,
+    pub goal: LevelGoal,
     pub placeable_atoms: Vec<AtomType>,
 }
 
@@ -117,13 +117,20 @@ impl LevelAtom {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct LevelGoal {
+pub enum LevelGoal {
+    None,
+    ReachPositions(Vec<LevelGoalPosition>),
+    CreateAtom(AtomType),
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct LevelGoalPosition {
     pub atom_type: AtomType,
     pub position: IVec2,
 }
 
 #[allow(dead_code)]
-impl LevelGoal {
+impl LevelGoalPosition {
     pub fn new<P: Into<IVec2>>(atom_type: AtomType, position: P) -> Self {
         Self {
             atom_type,
@@ -231,11 +238,13 @@ fn initialise_level(
     }
 
     // Spawn goal zones
-    for goal_zone in &level.goals {
-        commands.spawn((
-            goal(goal_zone.atom_type, goal_zone.position, &atom_assets),
-            LevelEntity,
-        ));
+    if let LevelGoal::ReachPositions(zones) = &level.goal {
+        for goal_zone in zones {
+            commands.spawn((
+                goal(goal_zone.atom_type, goal_zone.position, &atom_assets),
+                LevelEntity,
+            ));
+        }
     }
     Ok(())
 }

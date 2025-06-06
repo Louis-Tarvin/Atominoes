@@ -114,16 +114,116 @@ fn handle_collision(
             }
         }
 
-        // Reactive and splitting - spawn antimatter
+        // two splitting atoms split into 3
+        (AtomType::Splitting, AtomType::Splitting) => {
+            commands.entity(entity1).despawn();
+            commands.entity(entity2).despawn();
+
+            let movement = movement1.cloned().or_else(|| movement2.cloned());
+            match movement {
+                Some(movement) => {
+                    commands.spawn((
+                        atom(AtomType::Basic, event.position, &atom_assets),
+                        Movement::new(movement.direction),
+                        LevelEntity,
+                        CollisionCooldown::default(),
+                    ));
+                    commands.spawn((
+                        atom(AtomType::Basic, event.position, &atom_assets),
+                        Movement::new(movement.direction.clockwise().clockwise()),
+                        LevelEntity,
+                        CollisionCooldown::default(),
+                    ));
+                    commands.spawn((
+                        atom(AtomType::Basic, event.position, &atom_assets),
+                        Movement::new(movement.direction.anticlockwise().anticlockwise()),
+                        LevelEntity,
+                        CollisionCooldown::default(),
+                    ));
+                }
+                None => warn!("Collision between two stationary atoms. This shouldn't happen."),
+            }
+        }
+
+        // Reactives combine into antimatter
+        (AtomType::Reactive, AtomType::Reactive) => {
+            commands.entity(entity1).despawn();
+            commands.entity(entity2).despawn();
+
+            let movement = movement1.cloned().or_else(|| movement2.cloned());
+            match movement {
+                Some(movement) => {
+                    commands.spawn((
+                        atom(AtomType::Antimatter, event.position, &atom_assets),
+                        Movement::new(movement.direction),
+                        LevelEntity,
+                        CollisionCooldown::default(),
+                    ));
+                }
+                None => warn!("Collision between two stationary atoms. This shouldn't happen."),
+            }
+        }
+
+        // Basic pushes reactive
+        (AtomType::Basic, AtomType::Reactive) | (AtomType::Reactive, AtomType::Basic) => {
+            commands.entity(entity1).despawn();
+            commands.entity(entity2).despawn();
+
+            let movement = movement1.cloned().or_else(|| movement2.cloned());
+            match movement {
+                Some(movement) => {
+                    commands.spawn((
+                        atom(AtomType::Reactive, event.position, &atom_assets),
+                        Movement::new(movement.direction),
+                        LevelEntity,
+                        CollisionCooldown::default(),
+                    ));
+                }
+                None => warn!("Collision between two stationary atoms. This shouldn't happen."),
+            }
+        }
+
+        // Reactive and splitting split into 4
         (AtomType::Reactive, AtomType::Splitting) | (AtomType::Splitting, AtomType::Reactive) => {
             commands.entity(entity1).despawn();
             commands.entity(entity2).despawn();
 
-            commands.spawn((
-                atom(AtomType::Antimatter, event.position, &atom_assets),
-                LevelEntity,
-                CollisionCooldown::default(),
-            ));
+            let movement = movement1.cloned().or_else(|| movement2.cloned());
+            match movement {
+                Some(movement) => {
+                    commands.spawn((
+                        atom(AtomType::Basic, event.position, &atom_assets),
+                        Movement::new(movement.direction.clockwise()),
+                        LevelEntity,
+                        CollisionCooldown::default(),
+                    ));
+                    commands.spawn((
+                        atom(AtomType::Basic, event.position, &atom_assets),
+                        Movement::new(movement.direction.clockwise().clockwise().clockwise()),
+                        LevelEntity,
+                        CollisionCooldown::default(),
+                    ));
+                    commands.spawn((
+                        atom(AtomType::Basic, event.position, &atom_assets),
+                        Movement::new(movement.direction.anticlockwise()),
+                        LevelEntity,
+                        CollisionCooldown::default(),
+                    ));
+                    commands.spawn((
+                        atom(AtomType::Basic, event.position, &atom_assets),
+                        Movement::new(
+                            movement
+                                .direction
+                                .anticlockwise()
+                                .anticlockwise()
+                                .anticlockwise(),
+                        ),
+                        LevelEntity,
+                        CollisionCooldown::default(),
+                    ));
+                }
+                None => warn!("Collision between two stationary atoms. This shouldn't happen."),
+            }
         }
 
         // Basic and antimatter - similar to splitting but in opposite direction
@@ -151,13 +251,7 @@ fn handle_collision(
                         CollisionCooldown::default(),
                     ));
                 }
-                None => {
-                    warn!("Collision between two stationary atoms. This shouldn't happen.");
-                    commands.spawn((
-                        atom(AtomType::Basic, event.position, &atom_assets),
-                        LevelEntity,
-                    ));
-                }
+                None => warn!("Collision between two stationary atoms. This shouldn't happen."),
             }
         }
 
@@ -200,15 +294,6 @@ fn handle_collision(
         (AtomType::Antimatter, _) | (_, AtomType::Antimatter) => {
             return;
         }
-
-        _ => {
-            warn!(
-                "Unhandled collision between {:?} and {:?}",
-                atom_type1, atom_type2
-            );
-            commands.entity(entity1).despawn();
-            commands.entity(entity2).despawn();
-        }
     }
 }
 
@@ -246,16 +331,7 @@ fn handle_wall_collision(
 
 /// Get the two directions for splitting at 45 degree angles
 fn get_split_directions(direction: CardinalDirection) -> (CardinalDirection, CardinalDirection) {
-    match direction {
-        CardinalDirection::N => (CardinalDirection::NE, CardinalDirection::NW),
-        CardinalDirection::E => (CardinalDirection::NE, CardinalDirection::SE),
-        CardinalDirection::S => (CardinalDirection::SE, CardinalDirection::SW),
-        CardinalDirection::W => (CardinalDirection::SW, CardinalDirection::NW),
-        CardinalDirection::NE => (CardinalDirection::N, CardinalDirection::E),
-        CardinalDirection::SE => (CardinalDirection::E, CardinalDirection::S),
-        CardinalDirection::SW => (CardinalDirection::S, CardinalDirection::W),
-        CardinalDirection::NW => (CardinalDirection::W, CardinalDirection::N),
-    }
+    (direction.clockwise(), direction.anticlockwise())
 }
 
 /// Used to prevent newly spawned atoms from immediately colliding again

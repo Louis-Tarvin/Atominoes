@@ -4,13 +4,10 @@ use crate::{AppSystems, PausableSystems, screens::Screen};
 
 use super::{
     atom::{AtomAssets, AtomType},
-    level::CurrentLevel,
+    level::{CurrentLevel, Level},
     placement::GridPos,
     state::GameState,
 };
-
-#[derive(Component)]
-pub struct Goal(pub AtomType);
 
 pub(super) fn plugin(app: &mut App) {
     app.add_systems(
@@ -21,6 +18,9 @@ pub(super) fn plugin(app: &mut App) {
             .in_set(PausableSystems),
     );
 }
+
+#[derive(Component)]
+pub struct Goal(pub AtomType);
 
 pub fn goal(atom_type: AtomType, position: IVec2, atom_assets: &AtomAssets) -> impl Bundle {
     (
@@ -61,10 +61,35 @@ fn check_goal_collisions(
 
 fn check_win_condition(
     goals: Query<&Goal>,
+    atoms: Query<&AtomType, Without<Goal>>,
     mut next_state: ResMut<NextState<GameState>>,
     current_level: Res<CurrentLevel>,
+    level_assets: Res<Assets<Level>>,
 ) {
-    if matches!(*current_level, CurrentLevel::Loaded { .. }) && goals.is_empty() {
-        next_state.set(GameState::LevelComplete);
+    if let CurrentLevel::Loaded {
+        level_handle,
+        level_index: _,
+    } = &*current_level
+    {
+        match level_assets
+            .get(level_handle)
+            .expect("Current level should exist")
+            .goal
+        {
+            super::level::LevelGoal::None => return,
+            super::level::LevelGoal::ReachPositions(_) => {
+                if goals.is_empty() {
+                    next_state.set(GameState::LevelComplete);
+                }
+            }
+            super::level::LevelGoal::CreateAtom(atom_type) => {
+                if atoms
+                    .iter()
+                    .any(|&existing_atom_type| existing_atom_type == atom_type)
+                {
+                    next_state.set(GameState::LevelComplete);
+                }
+            }
+        }
     }
 }

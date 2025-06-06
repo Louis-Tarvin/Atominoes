@@ -1,6 +1,6 @@
 use atom::{AtomAssets, AtomType};
 use bevy::prelude::*;
-use level::{CurrentLevel, Level, LevelAssets, LevelAtom};
+use level::{CurrentLevel, Level, LevelAssets, LevelAtom, LevelGoal};
 
 use crate::{asset_tracking::LoadResource, screens::Screen};
 
@@ -54,7 +54,7 @@ fn init_level(
                 IVec2::new(-3, 0),
                 movement::CardinalDirection::E,
             )],
-            goals: vec![],
+            goal: LevelGoal::None,
             placeable_atoms: vec![
                 AtomType::Basic,
                 AtomType::Splitting,

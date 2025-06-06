@@ -1,0 +1,53 @@
+(
+    sidebar_text: "Looks like there's some gunk in the testing area...",
+    atoms: [
+        (
+            atom_type: Basic,
+            position: (-3, 0),
+            velocity: Some((
+                direction: E,
+                speed: 2.0,
+            )),
+        ),
+        (
+            atom_type: Wall,
+            position: (1, 0),
+            velocity: None,
+        ),
+        (
+            atom_type: Wall,
+            position: (2, 1),
+            velocity: None,
+        ),
+        (
+            atom_type: Wall,
+            position: (-1, 1),
+            velocity: None,
+        ),
+        (
+            atom_type: Wall,
+            position: (1, -1),
+            velocity: None,
+        ),
+        (
+            atom_type: Wall,
+            position: (0, -1),
+            velocity: None,
+        ),
+        (
+            atom_type: Wall,
+            position: (-1, -1),
+            velocity: None,
+        ),
+    ],
+    goal: ReachPositions([
+        (
+            atom_type: Basic,
+            position: (7, -1),
+        ),
+    ]),
+    placeable_atoms: [
+        Basic,
+        Splitting,
+    ],
+)
