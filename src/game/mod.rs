@@ -55,7 +55,13 @@ fn init_level(
                 movement::CardinalDirection::E,
             )],
             goals: vec![],
-            placeable_atoms: vec![AtomType::Basic, AtomType::Splitting, AtomType::Wall],
+            placeable_atoms: vec![
+                AtomType::Basic,
+                AtomType::Splitting,
+                AtomType::Reactive,
+                AtomType::Antimatter,
+                AtomType::Wall,
+            ],
         });
     }
 }

@@ -42,108 +42,204 @@ fn handle_collision(
 
     if event.entities.len() < 2 {
         return;
-    }
-
-    let mut atom_data = Vec::new();
-
-    for &entity in &event.entities {
-        if let Ok((atom_type, movement)) = atom_query.get(entity) {
-            atom_data.push((entity, *atom_type, movement.cloned()));
+    } else if event.entities.len() >= 3 {
+        // Despawn all colliding atoms
+        for &entity in &event.entities {
+            commands.entity(entity).despawn();
         }
-    }
-
-    // Check for wall collisions first
-    let wall_count = atom_data
-        .iter()
-        .filter(|(_, t, _)| *t == AtomType::Wall)
-        .count();
-
-    if wall_count > 0 {
-        // Handle wall collision - bounce non-wall atoms
-        for (entity, atom_type, movement) in atom_data {
-            if atom_type == AtomType::Wall {
-                // Keep walls intact - don't despawn them
-                continue;
-            } else if let Some(mut movement) = movement {
-                // Bounce the atom by reversing its direction
-                movement.direction = movement.direction.opposite();
-
-                // Despawn the original atom
-                commands.entity(entity).despawn();
-
-                // Spawn bounced atom
-                commands.spawn((
-                    atom(atom_type, event.position, &atom_assets),
-                    movement,
-                    LevelEntity,
-                    CollisionCooldown::default(),
-                ));
-            } else {
-                // Stationary atom hitting wall - just despawn it
-                commands.entity(entity).despawn();
-            }
-        }
-        return;
-    }
-
-    // Handle normal collisions (no walls involved)
-    // Despawn all colliding atoms
-    for &entity in &event.entities {
-        commands.entity(entity).despawn();
-    }
-
-    // Handle collision based on atom types
-    let basic_count = atom_data
-        .iter()
-        .filter(|(_, t, _)| *t == AtomType::Basic)
-        .count();
-    let splitting_count = atom_data
-        .iter()
-        .filter(|(_, t, _)| *t == AtomType::Splitting)
-        .count();
-
-    if splitting_count > 0 {
-        // Any splitting atom causes a split reaction
-        let movement = atom_data.iter().find_map(|(_, _, m)| m.as_ref()).cloned();
-
-        if let Some(movement) = movement {
-            let (dir1, dir2) = get_split_directions(movement.direction);
-
-            // Spawn basic atoms at split angles
-            commands.spawn((
-                atom(AtomType::Basic, event.position, &atom_assets),
-                Movement::new(dir1),
-                LevelEntity,
-                CollisionCooldown::default(),
-            ));
-
-            commands.spawn((
-                atom(AtomType::Basic, event.position, &atom_assets),
-                Movement::new(dir2),
-                LevelEntity,
-                CollisionCooldown::default(),
-            ));
-        } else {
-            // Fallback for stationary splitting atoms
-            for _ in 0..2 {
-                commands.spawn((
-                    atom(AtomType::Basic, event.position, &atom_assets),
-                    LevelEntity,
-                ));
-            }
-        }
-    } else if basic_count >= 2 {
-        // Multiple basic atoms fuse into a splitting atom
-        let movement = atom_data.iter().find_map(|(_, _, m)| m.as_ref()).cloned();
-
-        let mut entity = commands.spawn((
-            atom(AtomType::Splitting, event.position, &atom_assets),
+        // 3 way collision always spawns a (motionless) reactive atom
+        commands.spawn((
+            atom(AtomType::Reactive, event.position, &atom_assets),
             LevelEntity,
             CollisionCooldown::default(),
         ));
+        return;
+    }
 
-        if let Some(movement) = movement {
-            entity.insert(movement);
+    // We know there are exactly 2 entities at this point
+    let [entity1, entity2] = [event.entities[0], event.entities[1]];
+
+    let Ok((atom_type1, movement1)) = atom_query.get(entity1) else {
+        return;
+    };
+    let Ok((atom_type2, movement2)) = atom_query.get(entity2) else {
+        return;
+    };
+
+    // Handle collision based on atom types
+    match (atom_type1, atom_type2) {
+        // Wall and antimatter - destroy both
+        (AtomType::Wall, AtomType::Antimatter) | (AtomType::Antimatter, AtomType::Wall) => {
+            commands.entity(entity1).despawn();
+            commands.entity(entity2).despawn();
+        }
+
+        // Wall collisions - bounce the non-wall atom
+        (AtomType::Wall, other_type) => {
+            handle_wall_collision(
+                entity2,
+                *other_type,
+                movement2,
+                event.position,
+                &mut commands,
+                &atom_assets,
+            );
+        }
+        (other_type, AtomType::Wall) => {
+            handle_wall_collision(
+                entity1,
+                *other_type,
+                movement1,
+                event.position,
+                &mut commands,
+                &atom_assets,
+            );
+        }
+
+        // Two basic atoms fuse into a splitting atom
+        (AtomType::Basic, AtomType::Basic) => {
+            commands.entity(entity1).despawn();
+            commands.entity(entity2).despawn();
+
+            let movement = movement1.cloned().or_else(|| movement2.cloned());
+
+            let mut entity = commands.spawn((
+                atom(AtomType::Splitting, event.position, &atom_assets),
+                LevelEntity,
+                CollisionCooldown::default(),
+            ));
+
+            if let Some(movement) = movement {
+                entity.insert(movement);
+            }
+        }
+
+        // Reactive and splitting - spawn antimatter
+        (AtomType::Reactive, AtomType::Splitting) | (AtomType::Splitting, AtomType::Reactive) => {
+            commands.entity(entity1).despawn();
+            commands.entity(entity2).despawn();
+
+            commands.spawn((
+                atom(AtomType::Antimatter, event.position, &atom_assets),
+                LevelEntity,
+                CollisionCooldown::default(),
+            ));
+        }
+
+        // Basic and antimatter - similar to splitting but in opposite direction
+        (AtomType::Basic, AtomType::Antimatter) | (AtomType::Antimatter, AtomType::Basic) => {
+            commands.entity(entity1).despawn();
+            commands.entity(entity2).despawn();
+
+            let movement = movement1.cloned().or_else(|| movement2.cloned());
+
+            match movement {
+                Some(movement) => {
+                    let (dir1, dir2) = get_split_directions(movement.direction.opposite());
+
+                    // Spawn basic atoms at 45 degree angles
+                    commands.spawn((
+                        atom(AtomType::Basic, event.position, &atom_assets),
+                        Movement::new(dir1),
+                        LevelEntity,
+                        CollisionCooldown::default(),
+                    ));
+                    commands.spawn((
+                        atom(AtomType::Basic, event.position, &atom_assets),
+                        Movement::new(dir2),
+                        LevelEntity,
+                        CollisionCooldown::default(),
+                    ));
+                }
+                None => {
+                    warn!("Collision between two stationary atoms. This shouldn't happen.");
+                    commands.spawn((
+                        atom(AtomType::Basic, event.position, &atom_assets),
+                        LevelEntity,
+                    ));
+                }
+            }
+        }
+
+        // Splitting atom collisions - always split
+        (AtomType::Splitting, _) | (_, AtomType::Splitting) => {
+            commands.entity(entity1).despawn();
+            commands.entity(entity2).despawn();
+
+            let movement = movement1.cloned().or_else(|| movement2.cloned());
+
+            match movement {
+                Some(movement) => {
+                    let (dir1, dir2) = get_split_directions(movement.direction);
+
+                    // Spawn basic atoms at 45 degree angles
+                    commands.spawn((
+                        atom(AtomType::Basic, event.position, &atom_assets),
+                        Movement::new(dir1),
+                        LevelEntity,
+                        CollisionCooldown::default(),
+                    ));
+                    commands.spawn((
+                        atom(AtomType::Basic, event.position, &atom_assets),
+                        Movement::new(dir2),
+                        LevelEntity,
+                        CollisionCooldown::default(),
+                    ));
+                }
+                None => {
+                    warn!("Collision between two stationary atoms. This shouldn't happen.");
+                    commands.spawn((
+                        atom(AtomType::Basic, event.position, &atom_assets),
+                        LevelEntity,
+                    ));
+                }
+            }
+        }
+
+        // Antimatter phases through other atoms
+        (AtomType::Antimatter, _) | (_, AtomType::Antimatter) => {
+            return;
+        }
+
+        _ => {
+            warn!(
+                "Unhandled collision between {:?} and {:?}",
+                atom_type1, atom_type2
+            );
+            commands.entity(entity1).despawn();
+            commands.entity(entity2).despawn();
+        }
+    }
+}
+
+fn handle_wall_collision(
+    other_entity: Entity,
+    other_type: AtomType,
+    other_movement: Option<&Movement>,
+    position: IVec2,
+    commands: &mut Commands,
+    atom_assets: &AtomAssets,
+) {
+    match other_movement {
+        Some(movement) => {
+            // Bounce the atom by reversing its direction
+            let mut bounced_movement = movement.clone();
+            bounced_movement.direction = bounced_movement.direction.opposite();
+
+            // Despawn the original atom
+            commands.entity(other_entity).despawn();
+
+            // Spawn bounced atom
+            commands.spawn((
+                atom(other_type, position, atom_assets),
+                bounced_movement,
+                LevelEntity,
+                CollisionCooldown::default(),
+            ));
+        }
+        None => {
+            // Stationary atom hitting wall - just despawn it
+            commands.entity(other_entity).despawn();
         }
     }
 }
@@ -225,7 +321,7 @@ fn detect_atom_collisions(
 
     for (pos, entities) in potentially_colliding_positions.into_iter() {
         if entities.len() > 1 {
-            debug!("Collision at {pos}");
+            debug!("{} entities collided at {pos}", entities.len());
             commands.trigger(CollisionEvent {
                 entities,
                 position: pos,

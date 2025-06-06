@@ -10,6 +10,8 @@ pub enum AtomType {
     Basic,
     Splitting,
     Wall,
+    Reactive,
+    Antimatter,
 }
 
 impl AtomType {
@@ -18,6 +20,8 @@ impl AtomType {
             AtomType::Basic => atom_assets.basic.clone(),
             AtomType::Splitting => atom_assets.splitting.clone(),
             AtomType::Wall => atom_assets.wall.clone(),
+            AtomType::Reactive => atom_assets.reactive.clone(),
+            AtomType::Antimatter => atom_assets.antimatter.clone(),
         }
     }
 
@@ -53,6 +57,10 @@ pub struct AtomAssets {
     pub splitting: Handle<Image>,
     #[dependency]
     pub wall: Handle<Image>,
+    #[dependency]
+    pub reactive: Handle<Image>,
+    #[dependency]
+    pub antimatter: Handle<Image>,
 }
 
 impl FromWorld for AtomAssets {
@@ -73,6 +81,8 @@ impl FromWorld for AtomAssets {
             basic: assets.load("images/atom1.png"),
             splitting: assets.load("images/atom2.png"),
             wall: assets.load("images/atom3.png"),
+            reactive: assets.load("images/atom4.png"),
+            antimatter: assets.load("images/atom5.png"),
         }
     }
 }
