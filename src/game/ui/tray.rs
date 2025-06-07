@@ -18,11 +18,12 @@ pub(super) fn tray() -> impl Bundle {
         Name::new("Tray"),
         Node {
             bottom: Val::Px(0.0),
-            height: Val::Px(60.0),
+            height: Val::Px(64.0),
             border: UiRect::all(Val::Px(2.0)),
             padding: UiRect::all(Val::Px(5.0)),
             display: Display::Flex,
             position_type: PositionType::Absolute,
+            column_gap: Val::Px(5.0),
             ..Default::default()
         },
         UiTray,
@@ -48,6 +49,7 @@ fn drag_icon(atom_type: AtomType, atom_assets: &AtomAssets) -> impl Bundle {
                         height: Val::Px(50.0),
                         border: UiRect::all(Val::Px(1.0)),
                         padding: UiRect::horizontal(Val::Px(30.0)),
+                        aspect_ratio: Some(1.0),
                         ..Default::default()
                     },
                     ImageNode {

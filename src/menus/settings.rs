@@ -7,6 +7,7 @@ use bevy::{audio::Volume, input::common_conditions::input_just_pressed, prelude:
 use crate::{menus::Menu, screens::Screen, theme::prelude::*};
 
 pub(super) fn plugin(app: &mut App) {
+    app.add_systems(Startup, set_starting_volume);
     app.add_systems(OnEnter(Menu::Settings), spawn_settings_menu);
     app.add_systems(
         Update,
@@ -90,6 +91,10 @@ fn lower_global_volume(_: Trigger<Pointer<Click>>, mut global_volume: ResMut<Glo
 fn raise_global_volume(_: Trigger<Pointer<Click>>, mut global_volume: ResMut<GlobalVolume>) {
     let linear = (global_volume.volume.to_linear() + 0.1).min(MAX_VOLUME);
     global_volume.volume = Volume::Linear(linear);
+}
+
+fn set_starting_volume(mut global_volume: ResMut<GlobalVolume>) {
+    global_volume.volume = Volume::Linear(0.7);
 }
 
 #[derive(Component, Reflect)]

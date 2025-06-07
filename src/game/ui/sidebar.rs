@@ -26,8 +26,13 @@ pub(super) fn sidebar() -> impl Bundle {
             position_type: PositionType::Absolute,
             left: Val::Px(0.0),
             top: Val::Px(0.0),
-            width: Val::Px(320.0),
+            width: Val::Percent(30.0),
+            max_width: Val::Px(320.0),
             height: Val::Percent(100.0),
+            overflow: Overflow {
+                x: OverflowAxis::Hidden,
+                ..Default::default()
+            },
             padding: UiRect::all(Val::Px(24.0)),
             flex_direction: FlexDirection::Column,
             row_gap: Val::Px(16.0),
@@ -81,7 +86,7 @@ pub(super) fn update_sidebar_text(
         if let Ok(level) = current_level.get_level(&level_assets) {
             text.0 = format!("{}", level.sidebar_text);
         } else {
-            text.0 = "No level loaded".to_string();
+            text.0 = "Sandbox".to_string();
         }
     }
 }
@@ -98,7 +103,7 @@ pub(super) fn update_sidebar_header(
         {
             text.0 = format!("Level {}", level_index + 1);
         } else {
-            text.0 = "No level loaded".to_string();
+            text.0 = "Sandbox".to_string();
         }
     }
 }
