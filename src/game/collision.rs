@@ -1,6 +1,9 @@
 use bevy::{platform::collections::HashMap, prelude::*};
 
-use crate::{AppSystems, PausableSystems};
+use crate::{
+    AppSystems, PausableSystems,
+    audio::{AudioAssets, sound_effect},
+};
 
 use super::{
     atom::{AtomAssets, AtomType, atom},
@@ -37,6 +40,7 @@ fn handle_collision(
     mut commands: Commands,
     atom_assets: Res<AtomAssets>,
     atom_query: Query<(&AtomType, Option<&Movement>)>,
+    audio_assets: Res<AudioAssets>,
 ) {
     let event = trigger.event();
 
@@ -53,6 +57,7 @@ fn handle_collision(
             LevelEntity,
             CollisionCooldown::default(),
         ));
+        commands.spawn(sound_effect(audio_assets.split_big_sfx.clone()));
         return;
     }
 
@@ -72,6 +77,8 @@ fn handle_collision(
         (AtomType::Wall, AtomType::Antimatter) | (AtomType::Antimatter, AtomType::Wall) => {
             commands.entity(entity1).despawn();
             commands.entity(entity2).despawn();
+
+            commands.spawn(sound_effect(audio_assets.merge_sfx.clone()));
         }
 
         // Wall collisions - bounce the non-wall atom
@@ -84,6 +91,7 @@ fn handle_collision(
                 &mut commands,
                 &atom_assets,
             );
+            commands.spawn(sound_effect(audio_assets.hit_sfx.clone()));
         }
         (other_type, AtomType::Wall) => {
             handle_wall_collision(
@@ -94,6 +102,7 @@ fn handle_collision(
                 &mut commands,
                 &atom_assets,
             );
+            commands.spawn(sound_effect(audio_assets.hit_sfx.clone()));
         }
 
         // Two basic atoms fuse into a splitting atom
@@ -112,12 +121,16 @@ fn handle_collision(
             if let Some(movement) = movement {
                 entity.insert(movement);
             }
+
+            commands.spawn(sound_effect(audio_assets.merge_sfx.clone()));
         }
 
         // two splitting atoms split into 3
         (AtomType::Splitting, AtomType::Splitting) => {
             commands.entity(entity1).despawn();
             commands.entity(entity2).despawn();
+
+            commands.spawn(sound_effect(audio_assets.split_sfx.clone()));
 
             let movement = movement1.cloned().or_else(|| movement2.cloned());
             match movement {
@@ -150,6 +163,8 @@ fn handle_collision(
             commands.entity(entity1).despawn();
             commands.entity(entity2).despawn();
 
+            commands.spawn(sound_effect(audio_assets.merge_sfx.clone()));
+
             let movement = movement1.cloned().or_else(|| movement2.cloned());
             match movement {
                 Some(movement) => {
@@ -169,6 +184,8 @@ fn handle_collision(
             commands.entity(entity1).despawn();
             commands.entity(entity2).despawn();
 
+            commands.spawn(sound_effect(audio_assets.hit_sfx.clone()));
+
             let movement = movement1.cloned().or_else(|| movement2.cloned());
             match movement {
                 Some(movement) => {
@@ -187,6 +204,8 @@ fn handle_collision(
         (AtomType::Reactive, AtomType::Splitting) | (AtomType::Splitting, AtomType::Reactive) => {
             commands.entity(entity1).despawn();
             commands.entity(entity2).despawn();
+
+            commands.spawn(sound_effect(audio_assets.split_big_sfx.clone()));
 
             let movement = movement1.cloned().or_else(|| movement2.cloned());
             match movement {
@@ -231,6 +250,8 @@ fn handle_collision(
             commands.entity(entity1).despawn();
             commands.entity(entity2).despawn();
 
+            commands.spawn(sound_effect(audio_assets.split_sfx.clone()));
+
             let movement = movement1.cloned().or_else(|| movement2.cloned());
 
             match movement {
@@ -259,6 +280,8 @@ fn handle_collision(
         (AtomType::Splitting, _) | (_, AtomType::Splitting) => {
             commands.entity(entity1).despawn();
             commands.entity(entity2).despawn();
+
+            commands.spawn(sound_effect(audio_assets.split_sfx.clone()));
 
             let movement = movement1.cloned().or_else(|| movement2.cloned());
 

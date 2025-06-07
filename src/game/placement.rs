@@ -6,7 +6,10 @@ use bevy::{
     window::PrimaryWindow,
 };
 
-use crate::{AppSystems, PausableSystems, screens::Screen};
+use crate::{
+    AppSystems, PausableSystems, audio::sound_effect, screens::Screen,
+    theme::interaction::InteractionAssets,
+};
 
 use super::{
     animation::Animated,
@@ -122,6 +125,7 @@ fn handle_place_atom(
     atom_assets: Res<AtomAssets>,
     mut current_level: ResMut<CurrentLevel>,
     mut placed_atoms: ResMut<PlacedLevelAtoms>,
+    audio_assets: Res<InteractionAssets>,
 ) {
     if let Ok((entity, atom_type, transform)) = ghost_query.single() {
         // Despawn the ghost
@@ -140,6 +144,8 @@ fn handle_place_atom(
         } else {
             placed_atoms.add(*atom_type, grid_pos);
         }
+
+        commands.spawn(sound_effect(audio_assets.click.clone()));
     }
 }
 
@@ -190,6 +196,7 @@ fn delete_atom_on_rightclick(
     mut current_level: ResMut<CurrentLevel>,
     mut placed_atoms: ResMut<PlacedLevelAtoms>,
     mut commands: Commands,
+    audio_assets: Res<InteractionAssets>,
 ) {
     if buttons.just_released(MouseButton::Right) {
         if let Some(mouse_pos) = window.cursor_position() {
@@ -208,6 +215,7 @@ fn delete_atom_on_rightclick(
                         if let CurrentLevel::Editing(level) = &mut *current_level {
                             if nearest_grid_pos == nearest_atom_grid_pos {
                                 commands.entity(entity).despawn();
+                                commands.spawn(sound_effect(audio_assets.click.clone()));
                                 if level.remove_atom_at_position(nearest_grid_pos).is_none() {
                                     warn!(
                                         "Deleted atom while editing a level, but the atom didn't exist in the level!"
@@ -219,6 +227,7 @@ fn delete_atom_on_rightclick(
                             && nearest_grid_pos == nearest_atom_grid_pos
                         {
                             commands.entity(entity).despawn();
+                            commands.spawn(sound_effect(audio_assets.click.clone()));
                             placed_atoms.remove(&nearest_grid_pos);
                             return;
                         }

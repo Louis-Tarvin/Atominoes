@@ -1,6 +1,10 @@
 use bevy::{prelude::*, render::view::RenderLayers};
 
-use crate::{AppSystems, PausableSystems, screens::Screen};
+use crate::{
+    AppSystems, PausableSystems,
+    audio::{AudioAssets, sound_effect},
+    screens::Screen,
+};
 
 use super::{
     atom::{AtomAssets, AtomType},
@@ -39,6 +43,7 @@ fn check_goal_collisions(
     mut commands: Commands,
     goals: Query<(Entity, &Transform, &Goal)>,
     atoms: Query<(Entity, &Transform, &AtomType), Without<Goal>>,
+    audio_assets: Res<AudioAssets>,
 ) {
     for (goal_entity, goal_transform, goal) in &goals {
         for (atom_entity, atom_transform, atom_type) in &atoms {
@@ -53,6 +58,8 @@ fn check_goal_collisions(
                     // Destroy both the goal and the atom
                     commands.entity(goal_entity).despawn();
                     commands.entity(atom_entity).despawn();
+
+                    commands.spawn(sound_effect(audio_assets.hit_sfx.clone()));
                 }
             }
         }

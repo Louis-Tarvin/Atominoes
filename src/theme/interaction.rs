@@ -41,11 +41,11 @@ fn apply_interaction_palette(
 
 #[derive(Resource, Asset, Clone, Reflect)]
 #[reflect(Resource)]
-struct InteractionAssets {
+pub struct InteractionAssets {
     #[dependency]
-    hover: Handle<AudioSource>,
+    pub hover: Handle<AudioSource>,
     #[dependency]
-    click: Handle<AudioSource>,
+    pub click: Handle<AudioSource>,
 }
 
 impl FromWorld for InteractionAssets {
