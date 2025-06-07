@@ -47,7 +47,7 @@ fn check_goal_collisions(
                 let distance = goal_transform
                     .translation
                     .distance(atom_transform.translation);
-                let collision_threshold = 0.5;
+                let collision_threshold = 0.2;
 
                 if distance < collision_threshold {
                     // Destroy both the goal and the atom

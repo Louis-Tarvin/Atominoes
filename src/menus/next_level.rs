@@ -2,7 +2,7 @@ use bevy::{prelude::*, render::render_resource::encase::private::Length};
 
 use crate::{
     game::{
-        level::{CurrentLevel, LevelAssets},
+        level::{CurrentLevel, LevelAssets, PlacedLevelAtoms},
         state::GameState,
     },
     theme::widget,
@@ -28,8 +28,10 @@ fn goto_next_level(
     _: Trigger<Pointer<Click>>,
     mut next_state: ResMut<NextState<GameState>>,
     mut current_level: ResMut<CurrentLevel>,
+    mut placed_atoms: ResMut<PlacedLevelAtoms>,
     level_handles: Res<LevelAssets>,
 ) {
+    placed_atoms.clear();
     let new_index = current_level.get_index().unwrap() + 1;
     if new_index >= level_handles.levels.length() {
         error!("No more levels");

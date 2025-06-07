@@ -1,6 +1,7 @@
 use bevy::{
     asset::{AssetLoader, LoadContext, io::Reader},
     input::common_conditions::input_just_released,
+    platform::collections::HashMap,
     prelude::*,
     render::view::RenderLayers,
 };
@@ -15,6 +16,22 @@ use super::{
     state::GameState,
     win_condition::goal,
 };
+
+pub(super) fn plugin(app: &mut App) {
+    app.init_asset::<Level>()
+        .init_asset_loader::<LevelAssetLoader>();
+    app.register_type::<LevelAssets>();
+    app.load_resource::<LevelAssets>();
+    app.init_resource::<CurrentLevel>();
+    app.init_resource::<PlacedLevelAtoms>();
+    app.add_systems(OnEnter(Screen::Gameplay), draw_2d_grid);
+    app.add_systems(OnEnter(GameState::Placement), initialise_level);
+    app.add_systems(Update, draw_arrows.run_if(in_state(GameState::Placement)));
+    app.add_systems(
+        Update,
+        print_level_ron.run_if(input_just_released(KeyCode::F2)),
+    );
+}
 
 #[derive(Resource, Default)]
 pub enum CurrentLevel {
@@ -192,35 +209,41 @@ impl FromWorld for LevelAssets {
     }
 }
 
+/// Contains atoms that have been placed by the player and are not part of the level
+#[derive(Resource, Default)]
+pub struct PlacedLevelAtoms(HashMap<IVec2, AtomType>);
+impl PlacedLevelAtoms {
+    pub fn clear(&mut self) {
+        self.0.clear();
+    }
+    pub fn add(&mut self, atom_type: AtomType, position: IVec2) {
+        if self.0.insert(position, atom_type).is_some() {
+            warn!("Tried to place an atom in an occupied position");
+        }
+    }
+    pub fn remove(&mut self, position: &IVec2) {
+        if self.0.remove(position).is_none() {
+            warn!("Tried to remove a placed atom, but none existed at that location");
+        }
+    }
+}
+
 /// Marker component for entities that are part of the current level and thus need to be despawned
 /// when the level is unloaded.
 #[derive(Component)]
 pub struct LevelEntity;
 
-pub(super) fn plugin(app: &mut App) {
-    app.init_asset::<Level>()
-        .init_asset_loader::<LevelAssetLoader>();
-    app.register_type::<LevelAssets>();
-    app.load_resource::<LevelAssets>();
-    app.init_resource::<CurrentLevel>();
-    app.add_systems(OnEnter(Screen::Gameplay), draw_2d_grid);
-    app.add_systems(OnEnter(GameState::Placement), initialise_level);
-    app.add_systems(Update, draw_arrows.run_if(in_state(GameState::Placement)));
-    app.add_systems(
-        Update,
-        print_level_ron.run_if(input_just_released(KeyCode::F2)),
-    );
-}
-
 fn initialise_level(
     mut commands: Commands,
     current_level: Res<CurrentLevel>,
     level_assets: Res<Assets<Level>>,
+    placed_atoms: Res<PlacedLevelAtoms>,
     atom_assets: Res<AtomAssets>,
-    level_entities: Query<Entity, With<LevelEntity>>,
+    atom_entities: Query<Entity, With<AtomType>>,
+    level_entities: Query<Entity, (With<LevelEntity>, Without<AtomType>)>,
 ) -> Result {
     // First clean up existing level entities
-    for entity in level_entities.iter() {
+    for entity in atom_entities.iter().chain(level_entities) {
         commands.entity(entity).despawn();
     }
 
@@ -235,6 +258,10 @@ fn initialise_level(
         if let Some(velocity) = &level_atom.velocity {
             entity.insert(velocity.clone());
         }
+    }
+    // Spawn placed atoms
+    for (position, atom_type) in &placed_atoms.0 {
+        commands.spawn(atom(*atom_type, *position, &atom_assets));
     }
 
     // Spawn goal zones

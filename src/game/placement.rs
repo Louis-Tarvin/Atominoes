@@ -11,7 +11,7 @@ use crate::{AppSystems, PausableSystems, screens::Screen};
 use super::{
     animation::Animated,
     atom::{AtomAssets, AtomType, atom},
-    level::{CurrentLevel, LevelAtom, LevelEntity},
+    level::{CurrentLevel, LevelAtom, LevelEntity, PlacedLevelAtoms},
     state::GameState,
 };
 
@@ -121,6 +121,7 @@ fn handle_place_atom(
     ghost_query: Query<(Entity, &AtomType, &Transform), With<DraggingGhost>>,
     atom_assets: Res<AtomAssets>,
     mut current_level: ResMut<CurrentLevel>,
+    mut placed_atoms: ResMut<PlacedLevelAtoms>,
 ) {
     if let Ok((entity, atom_type, transform)) = ghost_query.single() {
         // Despawn the ghost
@@ -132,10 +133,12 @@ fn handle_place_atom(
         );
         let mut entity = commands.spawn(atom(*atom_type, grid_pos, &atom_assets));
 
-        // If we're editing a level, add the atom to the level data
         if let CurrentLevel::Editing(level) = &mut *current_level {
+            // If we're editing a level, add the atom to the level data
             level.atoms.push(LevelAtom::new(*atom_type, grid_pos));
             entity.insert(LevelEntity);
+        } else {
+            placed_atoms.add(*atom_type, grid_pos);
         }
     }
 }
@@ -185,6 +188,7 @@ fn delete_atom_on_rightclick(
     camera_query: Query<(&Camera, &GlobalTransform), With<Camera2d>>,
     atoms_query: Query<(Entity, &Transform, Option<&LevelEntity>), With<AtomType>>,
     mut current_level: ResMut<CurrentLevel>,
+    mut placed_atoms: ResMut<PlacedLevelAtoms>,
     mut commands: Commands,
 ) {
     if buttons.just_released(MouseButton::Right) {
@@ -215,6 +219,7 @@ fn delete_atom_on_rightclick(
                             && nearest_grid_pos == nearest_atom_grid_pos
                         {
                             commands.entity(entity).despawn();
+                            placed_atoms.remove(&nearest_grid_pos);
                             return;
                         }
                     }

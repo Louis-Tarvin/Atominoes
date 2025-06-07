@@ -22,7 +22,7 @@ fn spawn_main_menu(mut commands: Commands) {
         ],
         #[cfg(target_family = "wasm")]
         children![
-            widget::button("Play", enter_loading_or_gameplay_screen),
+            widget::button("Play", open_level_select_menu),
             widget::button("Settings", open_settings_menu),
             widget::button("Credits", open_credits_menu),
         ],
