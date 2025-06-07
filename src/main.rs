@@ -18,7 +18,9 @@ use bevy::{
     render::{camera::ScalingMode, view::RenderLayers},
 };
 
-pub const LEVELS: [&str; 5] = ["0.ron", "1.ron", "2.ron", "3.ron", "4.ron"];
+pub const LEVELS: [&str; 10] = [
+    "0.ron", "1.ron", "2.ron", "3.ron", "4.ron", "5.ron", "6.ron", "7.ron", "8.ron", "9.ron",
+];
 
 fn main() -> AppExit {
     App::new().add_plugins(AppPlugin).run()

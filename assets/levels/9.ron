@@ -1,0 +1,38 @@
+(
+    sidebar_text: "...",
+    atoms: [
+        (
+            atom_type: Basic,
+            position: (-1, 0),
+            velocity: Some((
+                direction: E,
+                speed: 2.0,
+            )),
+        ),
+    ],
+    goal: ReachPositions([
+    (
+        atom_type: Basic,
+        position: (-1, -4),
+    ),
+    (
+        atom_type: Basic,
+        position: (3, -4),
+    ),
+    (
+        atom_type: Basic,
+        position: (-2, 4),
+    ),
+    (
+        atom_type: Basic,
+        position: (4, 4),
+    ),
+    ]),
+    placeable_atoms: [
+        Basic,
+        Splitting,
+        Reactive,
+        Antimatter,
+        Wall,
+    ],
+)

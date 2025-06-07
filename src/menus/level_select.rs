@@ -42,7 +42,9 @@ fn start_with_level_editor(
     _: Trigger<Pointer<Click>>,
     resource_handles: Res<ResourceHandles>,
     mut next_screen: ResMut<NextState<Screen>>,
+    mut menu_selection: ResMut<MenuSelection>,
 ) {
+    *menu_selection = MenuSelection::Editor;
     if resource_handles.is_all_done() {
         next_screen.set(Screen::Gameplay);
     } else {

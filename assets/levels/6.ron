@@ -1,0 +1,23 @@
+(
+    sidebar_text: "Make antimatter",
+    atoms: [
+        (
+            atom_type: Basic,
+            position: (-2, 0),
+            velocity: Some((
+                direction: E,
+                speed: 2.0,
+            )),
+        ),
+        (
+            atom_type: Reactive,
+            position: (6, 0),
+            velocity: None,
+        ),
+    ],
+    goal: CreateAtom(Antimatter),
+    placeable_atoms: [
+        Basic,
+        Splitting,
+    ],
+)
