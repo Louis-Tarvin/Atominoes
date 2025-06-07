@@ -9,7 +9,11 @@ pub(super) fn plugin(app: &mut App) {
     app.add_systems(OnEnter(Screen::Gameplay), init_level_ui);
     app.add_systems(
         Update,
-        (sidebar::update_sidebar_text, tray::update_drag_icons)
+        (
+            sidebar::update_sidebar_text,
+            sidebar::update_sidebar_header,
+            tray::update_drag_icons,
+        )
             .run_if(resource_changed::<super::level::CurrentLevel>.and(in_state(Screen::Gameplay))),
     );
 }

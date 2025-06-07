@@ -11,6 +11,16 @@
         ),
         (
             atom_type: Wall,
+            position: (3, -1),
+            velocity: None,
+        ),
+        (
+            atom_type: Wall,
+            position: (3, 1),
+            velocity: None,
+        ),
+        (
+            atom_type: Wall,
             position: (2, -1),
             velocity: None,
         ),
@@ -21,24 +31,14 @@
         ),
         (
             atom_type: Wall,
-            position: (1, -1),
-            velocity: None,
-        ),
-        (
-            atom_type: Wall,
-            position: (1, 1),
-            velocity: None,
-        ),
-        (
-            atom_type: Wall,
-            position: (1, 0),
+            position: (2, 0),
             velocity: None,
         ),
     ],
     goal: ReachPositions([
     (
         atom_type: Basic,
-        position: (2, 0),
+        position: (3, 0),
     ),
     ]),
     placeable_atoms: [

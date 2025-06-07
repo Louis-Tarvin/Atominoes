@@ -10,6 +10,7 @@ pub enum GameState {
     Placement,
     Running,
     LevelComplete,
+    RestartLevel,
 }
 
 pub(super) fn plugin(app: &mut App) {
@@ -20,6 +21,11 @@ pub(super) fn plugin(app: &mut App) {
             .in_set(AppSystems::RecordInput)
             .run_if(in_state(Screen::Gameplay)),
     );
+    app.add_systems(OnEnter(GameState::RestartLevel), handle_restart);
+}
+
+fn handle_restart(mut next_state: ResMut<NextState<GameState>>) {
+    next_state.set(GameState::Placement);
 }
 
 fn toggle_game_state_system(
@@ -32,6 +38,7 @@ fn toggle_game_state_system(
             GameState::Placement => GameState::Running,
             GameState::Running => GameState::Placement,
             GameState::LevelComplete => GameState::LevelComplete,
+            GameState::RestartLevel => GameState::RestartLevel,
         };
         next_state.set(new_state);
     }

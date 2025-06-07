@@ -16,22 +16,34 @@ fn spawn_level_select_menu(mut commands: Commands) {
         StateScoped(Menu::LevelSelect),
         Children::spawn((
             Spawn(widget::header("Choose Level:")),
-            SpawnIter(LEVELS.iter().enumerate().map(|(i, _)| {
-                (widget::button(
-                    i.to_string(),
-                    move |_: Trigger<Pointer<Click>>,
-                          resource_handles: Res<ResourceHandles>,
-                          mut next_screen: ResMut<NextState<Screen>>,
-                          mut menu_selection: ResMut<MenuSelection>| {
-                        *menu_selection = MenuSelection::Level(i);
-                        if resource_handles.is_all_done() {
-                            next_screen.set(Screen::Gameplay);
-                        } else {
-                            next_screen.set(Screen::Loading);
-                        }
-                    },
-                ),)
-            })),
+            Spawn((
+                Name::new("Levels wrapper"),
+                Node {
+                    display: Display::Flex,
+                    flex_wrap: FlexWrap::Wrap,
+                    flex_direction: FlexDirection::Row,
+                    justify_content: JustifyContent::Center,
+                    row_gap: Val::Px(10.0),
+                    column_gap: Val::Px(5.0),
+                    ..Default::default()
+                },
+                Children::spawn((SpawnIter(LEVELS.iter().enumerate().map(|(i, _)| {
+                    (widget::button(
+                        (i + 1).to_string(),
+                        move |_: Trigger<Pointer<Click>>,
+                              resource_handles: Res<ResourceHandles>,
+                              mut next_screen: ResMut<NextState<Screen>>,
+                              mut menu_selection: ResMut<MenuSelection>| {
+                            *menu_selection = MenuSelection::Level(i);
+                            if resource_handles.is_all_done() {
+                                next_screen.set(Screen::Gameplay);
+                            } else {
+                                next_screen.set(Screen::Loading);
+                            }
+                        },
+                    ),)
+                })),)),
+            )),
             Spawn(widget::button("Sandbox", start_with_level_editor)),
             Spawn(widget::button("Back", go_back)),
         )),

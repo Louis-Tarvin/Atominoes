@@ -1,8 +1,10 @@
 use bevy::prelude::*;
 
 use crate::{
-    game::level::{CurrentLevel, Level},
-    menus::Menu,
+    game::{
+        level::{CurrentLevel, Level, PlacedLevelAtoms},
+        state::GameState,
+    },
     screens::Screen,
     theme::{palette::*, widget},
 };
@@ -12,6 +14,9 @@ struct UiSidebar;
 
 #[derive(Component)]
 pub(super) struct UiSidebarText;
+
+#[derive(Component)]
+pub(super) struct UiSidebarHeader;
 
 pub(super) fn sidebar() -> impl Bundle {
     (
@@ -34,7 +39,8 @@ pub(super) fn sidebar() -> impl Bundle {
         children![
             (
                 Name::new("Sidebar Header"),
-                Text::new("Level Info"),
+                Text::new("Level"),
+                UiSidebarHeader,
                 TextFont {
                     font_size: 28.0,
                     ..Default::default()
@@ -59,8 +65,9 @@ pub(super) fn sidebar() -> impl Bundle {
                     ..Default::default()
                 },
             ),
-            widget::button("Settings", open_settings_menu),
-            widget::button("Quit to title", quit_to_title),
+            widget::sidebar_button("Start / Stop simulation", start_stop),
+            widget::sidebar_button("Reset level", reset),
+            widget::sidebar_button("Quit to title", quit_to_title),
         ],
     )
 }
@@ -79,8 +86,41 @@ pub(super) fn update_sidebar_text(
     }
 }
 
-fn open_settings_menu(_: Trigger<Pointer<Click>>, mut next_menu: ResMut<NextState<Menu>>) {
-    next_menu.set(Menu::Settings);
+pub(super) fn update_sidebar_header(
+    current_level: Res<CurrentLevel>,
+    mut text_query: Query<&mut Text, With<UiSidebarHeader>>,
+) {
+    if let Ok(mut text) = text_query.single_mut() {
+        if let CurrentLevel::Loaded {
+            level_handle: _,
+            level_index,
+        } = *current_level
+        {
+            text.0 = format!("Level {}", level_index + 1);
+        } else {
+            text.0 = "No level loaded".to_string();
+        }
+    }
+}
+fn start_stop(
+    _: Trigger<Pointer<Click>>,
+    current_state: Res<State<GameState>>,
+    mut next_state: ResMut<NextState<GameState>>,
+) {
+    if matches!(**current_state, GameState::Placement) {
+        next_state.set(GameState::Running);
+    } else if matches!(**current_state, GameState::Running) {
+        next_state.set(GameState::Placement);
+    }
+}
+
+fn reset(
+    _: Trigger<Pointer<Click>>,
+    mut next_state: ResMut<NextState<GameState>>,
+    mut placed_atoms: ResMut<PlacedLevelAtoms>,
+) {
+    placed_atoms.clear();
+    next_state.set(GameState::RestartLevel);
 }
 
 fn quit_to_title(_: Trigger<Pointer<Click>>, mut next_screen: ResMut<NextState<Screen>>) {

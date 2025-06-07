@@ -27,21 +27,19 @@
         ),
         (
             atom_type: Basic,
-            position: (0, 5),
+            position: (1, 4),
             velocity: Some((
-                direction: SE,
+                direction: E,
                 speed: 2.0,
             )),
         ),
         (
-            atom_type: Splitting,
-            position: (1, 4),
-            velocity: None,
-        ),
-        (
-            atom_type: Splitting,
+            atom_type: Basic,
             position: (1, 3),
-            velocity: None,
+            velocity: Some((
+                direction: SE,
+                speed: 2.0,
+            )),
         ),
         (
             atom_type: Splitting,
