@@ -1,4 +1,7 @@
+use std::time::Duration;
+
 use bevy::{prelude::*, render::view::RenderLayers};
+use bevy_easings::Ease;
 
 use crate::{
     AppSystems, PausableSystems,
@@ -36,6 +39,26 @@ pub fn goal(atom_type: AtomType, position: IVec2, atom_assets: &AtomAssets) -> i
             .with_scale(Vec3::splat(0.002)),
         RenderLayers::layer(2),
         StateScoped(Screen::Gameplay),
+        children![(
+            (Sprite {
+                image: atom_assets.circle.clone(),
+                color: Color::linear_rgba(0.8, 0.8, 0.2, 0.2),
+                ..Default::default()
+            }),
+            // Transform::default(),
+            Transform::from_scale(Vec3::splat(1.1))
+                .with_translation(Vec3::new(7.0, -12.0, 1.0))
+                .ease_to(
+                    Transform::from_scale(Vec3::splat(1.4))
+                        .with_translation(Vec3::new(7.0, -12.0, 1.0)),
+                    bevy_easings::EaseFunction::CubicInOut,
+                    bevy_easings::EasingType::PingPong {
+                        duration: Duration::from_millis(2500),
+                        pause: None
+                    }
+                ),
+            RenderLayers::layer(2),
+        )],
     )
 }
 

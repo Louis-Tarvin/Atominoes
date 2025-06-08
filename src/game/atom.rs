@@ -61,6 +61,8 @@ pub struct AtomAssets {
     pub reactive: Handle<Image>,
     #[dependency]
     pub antimatter: Handle<Image>,
+    #[dependency]
+    pub circle: Handle<Image>,
 }
 
 impl FromWorld for AtomAssets {
@@ -83,6 +85,7 @@ impl FromWorld for AtomAssets {
             wall: assets.load("images/atom3.png"),
             reactive: assets.load("images/atom4.png"),
             antimatter: assets.load("images/atom5.png"),
+            circle: assets.load("images/circle.png"),
         }
     }
 }

@@ -49,6 +49,7 @@ fn init_level(
     } else {
         *current_level = CurrentLevel::Editing(Level {
             sidebar_text: "This is an open-ended sandbox / level editor.\nPressing F2 will export the level as text and print it to the console, which can be used to make custom levels (Although this feature is a bit half-baked, as the level files still require manual editing to add a goal)".to_string(),
+            level_complete_text: String::new(),
             atoms: vec![LevelAtom::new_with_velocity(
                 AtomType::Basic,
                 IVec2::new(-3, 0),

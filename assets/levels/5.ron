@@ -1,5 +1,6 @@
 (
-    sidebar_text: "...",
+    sidebar_text: "I've just received word that our researchers have named the new atom the 'blue atom'. Fantastic. This is why we pay them the big bucks.",
+    level_complete_text: "Good work. On to the next experiment!",
     atoms: [
         (
             atom_type: Basic,
@@ -34,6 +35,11 @@
             position: (2, 0),
             velocity: None,
         ),
+        (
+            atom_type: Reactive,
+            position: (5, 2),
+            velocity: None,
+        ),
     ],
     goal: ReachPositions([
     (
@@ -44,6 +50,5 @@
     placeable_atoms: [
         Basic,
         Splitting,
-        Reactive,
     ],
 )

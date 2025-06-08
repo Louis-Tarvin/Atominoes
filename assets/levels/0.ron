@@ -1,5 +1,6 @@
 (
-    sidebar_text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
+    sidebar_text: "Welcome to Atom Smashers Inc. What do we do? We smash atoms. For science! As the new hire, it's your job to carry out the experiments cooked up by the research team. Validate hypotheses, discover new elements, yadda yadda. Anyway, to get you warmed up, place a basic atom along the path of the other basic atom and start the experiment to create the next tier of atom.",
+    level_complete_text: "Well done, [employee-name-here]!",
     atoms: [
         (
             atom_type: Basic,
@@ -13,7 +14,7 @@
     goal: ReachPositions([
         (
             atom_type: Splitting,
-            position: (3, 0),
+            position: (4, 0),
         ),
     ]),
     placeable_atoms: [Basic],

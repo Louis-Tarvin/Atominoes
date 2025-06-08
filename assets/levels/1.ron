@@ -1,5 +1,6 @@
 (
-    sidebar_text: "WOW! A SECOND LEVEL!",
+    sidebar_text: "That green atom is what the research boffins have inventively called a 'splitting atom'. Use it to get atoms to the corresponding goal positions.",
+    level_complete_text: "Looks like you've grasped the basics. Let's keep going.",
     atoms: [
         (
             atom_type: Basic,

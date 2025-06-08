@@ -276,8 +276,8 @@ fn handle_collision(
             }
         }
 
-        // Splitting atom collisions - always split
-        (AtomType::Splitting, _) | (_, AtomType::Splitting) => {
+        // Splitting atom collisions - split
+        (AtomType::Splitting, AtomType::Basic) | (AtomType::Basic, AtomType::Splitting) => {
             commands.entity(entity1).despawn();
             commands.entity(entity2).despawn();
 

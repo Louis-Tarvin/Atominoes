@@ -3,9 +3,10 @@ use bevy::{prelude::*, render::render_resource::encase::private::Length};
 use crate::{
     audio::{AudioAssets, sound_effect},
     game::{
-        level::{CurrentLevel, LevelAssets, PlacedLevelAtoms},
+        level::{CurrentLevel, Level, LevelAssets, PlacedLevelAtoms},
         state::GameState,
     },
+    screens::Screen,
     theme::widget,
 };
 
@@ -13,13 +14,24 @@ pub(super) fn plugin(app: &mut App) {
     app.add_systems(OnEnter(GameState::LevelComplete), spawn_next_level_menu);
 }
 
-fn spawn_next_level_menu(mut commands: Commands, audio_assets: Res<AudioAssets>) {
+fn spawn_next_level_menu(
+    mut commands: Commands,
+    audio_assets: Res<AudioAssets>,
+    current_level: Res<CurrentLevel>,
+    level_assets: Res<Assets<Level>>,
+) {
+    let text = current_level
+        .get_level(&level_assets)
+        .expect("Level is initialised at this point")
+        .level_complete_text
+        .clone();
     commands.spawn((
         widget::bouncy_ui_root("Next Level Menu"),
         GlobalZIndex(2),
         StateScoped(GameState::LevelComplete),
         children![
             widget::header("Level complete!"),
+            widget::label(text),
             widget::button("Continue", goto_next_level),
         ],
     ));
@@ -39,7 +51,8 @@ fn spawn_next_level_menu(mut commands: Commands, audio_assets: Res<AudioAssets>)
 
 fn goto_next_level(
     _: Trigger<Pointer<Click>>,
-    mut next_state: ResMut<NextState<GameState>>,
+    mut next_game_state: ResMut<NextState<GameState>>,
+    mut next_screen: ResMut<NextState<Screen>>,
     mut current_level: ResMut<CurrentLevel>,
     mut placed_atoms: ResMut<PlacedLevelAtoms>,
     level_handles: Res<LevelAssets>,
@@ -47,9 +60,9 @@ fn goto_next_level(
     placed_atoms.clear();
     let new_index = current_level.get_index().unwrap() + 1;
     if new_index >= level_handles.levels.length() {
-        error!("No more levels");
+        next_screen.set(Screen::Title);
     } else {
         current_level.set_level(level_handles.levels[new_index].clone(), new_index);
-        next_state.set(GameState::Placement);
+        next_game_state.set(GameState::Placement);
     }
 }

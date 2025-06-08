@@ -1,5 +1,6 @@
 (
-    sidebar_text: "Looks like there's some gunk in the testing area...",
+    sidebar_text: "Ugh, looks like there's some gunk in the testing area. Those white atoms are inert and won't react with anything. I'm sure you'll be able to navigate around the obstacles.",
+    level_complete_text: "We should really take better care of our equipment...",
     atoms: [
         (
             atom_type: Basic,
@@ -42,6 +43,11 @@
         (
             atom_type: Wall,
             position: (-1, -1),
+            velocity: None,
+        ),
+        (
+            atom_type: Wall,
+            position: (0, 1),
             velocity: None,
         ),
     ],

@@ -1,18 +1,10 @@
 (
-    sidebar_text: "Good news. You now have unlimited access to blue atoms. Anyway, in this experiment we want to test the properties of the newly discovered Antimatter atom. Apparently it phases through most other atoms entirely.",
-    level_complete_text: "So, the Antimatter destroys gunk? I think we've just invented a new type of cleaning fluid.",
+    sidebar_text: "I've got some bad news. Apparently this is a 'company' and we are supposed to be making 'money' or whatever. The investors are not happy, so we're pivoting our business to cleaning fluid. This'll be your last experiment with us. You can take a complimentary bottle of Atom Smashers Inc. Cleaning Fluid (tm) on your way out.",
+    level_complete_text: "You've been fired.\nThanks for playing!",
     atoms: [
         (
-            atom_type: Antimatter,
-            position: (-3, 0),
-            velocity: Some((
-                direction: E,
-                speed: 2.0,
-            )),
-        ),
-        (
             atom_type: Basic,
-            position: (-2, 0),
+            position: (-3, 0),
             velocity: Some((
                 direction: E,
                 speed: 2.0,
@@ -35,12 +27,17 @@
         ),
         (
             atom_type: Wall,
-            position: (4, 1),
+            position: (4, -2),
             velocity: None,
         ),
         (
             atom_type: Wall,
-            position: (4, -1),
+            position: (4, 2),
+            velocity: None,
+        ),
+        (
+            atom_type: Wall,
+            position: (5, 1),
             velocity: None,
         ),
         (
@@ -55,29 +52,33 @@
         ),
         (
             atom_type: Wall,
-            position: (5, 1),
+            position: (5, -2),
             velocity: None,
         ),
         (
-            atom_type: Splitting,
-            position: (1, 0),
+            atom_type: Wall,
+            position: (5, 2),
             velocity: None,
         ),
         (
-            atom_type: Reactive,
-            position: (0, 0),
+            atom_type: Wall,
+            position: (3, -2),
             velocity: None,
         ),
         (
-            atom_type: Antimatter,
-            position: (2, 0),
+            atom_type: Wall,
+            position: (3, 2),
             velocity: None,
         ),
     ],
     goal: ReachPositions([
         (
             atom_type: Antimatter,
-            position: (4, 0),
+            position: (4, 1),
+        ),
+        (
+            atom_type: Antimatter,
+            position: (4, -1),
         ),
     ]),
     placeable_atoms: [

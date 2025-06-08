@@ -1,5 +1,6 @@
 (
-    sidebar_text: "Create a new type of atom",
+    sidebar_text: "Alright, the science team have a new hypothesis that they're quite excited about. Apparently, if you get three atoms to collide at the same time, they'll fuse into a new type of atom. How you manage to do that is your problem. I'm sure you'll figure it out.",
+    level_complete_text: "Amazing! I'll start drafting the research paper right away!",
     atoms: [
         (
             atom_type: Basic,

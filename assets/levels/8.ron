@@ -1,101 +1,35 @@
 (
-    sidebar_text: "Oops, I spilled a bunch of atoms a colleagues experiment. I don't suppose you could fix it?",
+    sidebar_text: "Apparently Antimatter also reacts strangely with basic atoms. Give it a try.",
+    level_complete_text: "Good work. On to the next experiment!",
     atoms: [
         (
             atom_type: Basic,
-            position: (-3, 0),
-            velocity: Some((
-                direction: E,
-                speed: 2.0,
-            )),
-        ),
-        (
-            atom_type: Basic,
-            position: (-2, -3),
-            velocity: Some((
-                direction: NE,
-                speed: 2.0,
-            )),
-        ),
-        (
-            atom_type: Antimatter,
-            position: (3, 1),
-            velocity: Some((
-                direction: N,
-                speed: 2.0,
-            )),
-        ),
-        (
-            atom_type: Basic,
-            position: (1, 4),
-            velocity: Some((
-                direction: E,
-                speed: 2.0,
-            )),
-        ),
-        (
-            atom_type: Basic,
-            position: (1, 3),
-            velocity: Some((
-                direction: SE,
-                speed: 2.0,
-            )),
-        ),
-        (
-            atom_type: Splitting,
-            position: (2, 4),
-            velocity: None,
-        ),
-        (
-            atom_type: Reactive,
-            position: (4, 0),
-            velocity: None,
-        ),
-        (
-            atom_type: Splitting,
             position: (-1, 0),
-            velocity: None,
-        ),
-        (
-            atom_type: Splitting,
-            position: (0, -1),
-            velocity: None,
-        ),
-        (
-            atom_type: Antimatter,
-            position: (0, -4),
-            velocity: None,
-        ),
-        (
-            atom_type: Basic,
-            position: (3, -1),
-            velocity: None,
-        ),
-        (
-            atom_type: Basic,
-            position: (4, 2),
-            velocity: None,
+            velocity: Some((
+                direction: E,
+                speed: 2.0,
+            )),
         ),
     ],
     goal: ReachPositions([
-        (
-            atom_type: Splitting,
-            position: (4, 3),
-        ),
-        (
-            atom_type: Basic,
-            position: (6, 0),
-        ),
-        (
-            atom_type: Basic,
-            position: (4, 4),
-        ),
-        (
-            atom_type: Basic,
-            position: (1, 2),
-        ),
+    (
+        atom_type: Basic,
+        position: (-1, -4),
+    ),
+    (
+        atom_type: Basic,
+        position: (3, -4),
+    ),
+    (
+        atom_type: Basic,
+        position: (-2, 4),
+    ),
+    (
+        atom_type: Basic,
+        position: (4, 4),
+    ),
     ]),
     placeable_atoms: [
-        Wall,
+        Antimatter,
     ],
 )

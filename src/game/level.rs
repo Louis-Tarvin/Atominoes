@@ -88,6 +88,7 @@ pub enum GetLevelError {
 #[derive(Asset, TypePath, Debug, Serialize, Deserialize)]
 pub struct Level {
     pub sidebar_text: String,
+    pub level_complete_text: String,
     pub atoms: Vec<LevelAtom>,
     pub goal: LevelGoal,
     pub placeable_atoms: Vec<AtomType>,

@@ -1,5 +1,6 @@
 (
-    sidebar_text: "Make antimatter",
+    sidebar_text: "The boffins are eager to find out what happens when two blue atoms react together. Think you can find out? This'll be a little tricky as blue atoms don't have any momentum when created, so you'll need to give one of them a push somehow. Also we haven't yet mass produced blue atoms, so you'll have to make do with just the first two types of atom.",
+    level_complete_text: "It seems to have made some kind of Antimatter. Interesting!",
     atoms: [
         (
             atom_type: Basic,
@@ -8,6 +9,11 @@
                 direction: E,
                 speed: 2.0,
             )),
+        ),
+        (
+            atom_type: Splitting,
+            position: (-3, 0),
+            velocity: None,
         ),
         (
             atom_type: Reactive,

@@ -1,5 +1,6 @@
 (
-    sidebar_text: "...",
+    sidebar_text: "Apparently an even bigger reaction occurs when a splitting atom hits another splitting atom...",
+    level_complete_text: "Good work. On to the next experiment!",
     atoms: [
         (
             atom_type: Basic,
