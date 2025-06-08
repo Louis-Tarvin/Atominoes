@@ -63,10 +63,15 @@ fn apply_global_volume(
 pub struct AudioAssets {
     #[dependency]
     pub bgm: Handle<AudioSource>,
+    #[dependency]
     pub merge_sfx: Handle<AudioSource>,
+    #[dependency]
     pub split_sfx: Handle<AudioSource>,
+    #[dependency]
     pub hit_sfx: Handle<AudioSource>,
+    #[dependency]
     pub split_big_sfx: Handle<AudioSource>,
+    #[dependency]
     pub level_complete_sfx: Handle<AudioSource>,
 }
 impl FromWorld for AudioAssets {

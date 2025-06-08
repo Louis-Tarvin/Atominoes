@@ -54,10 +54,13 @@ fn drag_icon(atom_type: AtomType, atom_assets: &AtomAssets) -> impl Bundle {
                     },
                     ImageNode {
                         image: atom_type.get_image_handle(&atom_assets),
-                        texture_atlas: Some(TextureAtlas {
-                            layout: atom_assets.atlas_layout.clone(),
-                            index: 8,
-                        }),
+                        texture_atlas: match atom_type {
+                            AtomType::Wall => None,
+                            _ => Some(TextureAtlas {
+                                layout: atom_assets.atlas_layout.clone(),
+                                index: 8,
+                            }),
+                        },
                         ..Default::default()
                     },
                     BorderColor(OFF_WHITE),

@@ -26,23 +26,37 @@ impl AtomType {
     }
 
     pub fn get_sprite(&self, atom_assets: &AtomAssets) -> Sprite {
-        Sprite::from_atlas_image(
-            self.get_image_handle(atom_assets),
-            TextureAtlas {
-                layout: atom_assets.atlas_layout.clone(),
-                index: 0,
-            },
-        )
+        match self {
+            AtomType::Wall => Sprite::from_image(self.get_image_handle(atom_assets)),
+            _ => Sprite::from_atlas_image(
+                self.get_image_handle(atom_assets),
+                TextureAtlas {
+                    layout: atom_assets.atlas_layout.clone(),
+                    index: 0,
+                },
+            ),
+        }
     }
     pub fn get_ghost_sprite(&self, atom_assets: &AtomAssets) -> Sprite {
-        Sprite {
-            image: self.get_image_handle(atom_assets),
-            texture_atlas: Some(TextureAtlas {
-                layout: atom_assets.atlas_layout.clone(),
-                index: 8,
-            }),
-            color: Color::srgba(1.0, 1.0, 1.0, 0.5), // 50% transparent
-            ..Default::default()
+        match self {
+            AtomType::Wall => {
+                Sprite {
+                    image: self.get_image_handle(atom_assets),
+                    color: Color::srgba(1.0, 1.0, 1.0, 0.5), // 50% transparent
+                    ..Default::default()
+                }
+            }
+            _ => {
+                Sprite {
+                    image: self.get_image_handle(atom_assets),
+                    texture_atlas: Some(TextureAtlas {
+                        layout: atom_assets.atlas_layout.clone(),
+                        index: 8,
+                    }),
+                    color: Color::srgba(1.0, 1.0, 1.0, 0.5), // 50% transparent
+                    ..Default::default()
+                }
+            }
         }
     }
 }
