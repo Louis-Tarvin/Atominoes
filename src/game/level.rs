@@ -297,7 +297,7 @@ fn draw_2d_grid(mut commands: Commands, mut gizmo_assets: ResMut<Assets<GizmoAss
 
 fn draw_arrows(mut gizmos: Gizmos, moving_atoms: Query<(&Movement, &Transform), With<AtomType>>) {
     for (movement, transform) in moving_atoms.iter() {
-        let direction = movement.direction.to_velocity();
+        let direction = movement.direction.as_velocity();
         let position = transform.translation.xy();
         gizmos.arrow_2d(
             position + (direction * 0.3),

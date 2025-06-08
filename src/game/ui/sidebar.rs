@@ -66,8 +66,8 @@ pub(super) fn sidebar() -> impl Bundle {
                 duration: Duration::from_millis(1500),
             },
         ),
-        BorderColor(ACCENT.into()),
-        BackgroundColor(BACKGROUND.into()),
+        BorderColor(ACCENT),
+        BackgroundColor(BACKGROUND),
         children![
             (
                 Name::new("Sidebar Header"),
@@ -77,7 +77,7 @@ pub(super) fn sidebar() -> impl Bundle {
                     font_size: 28.0,
                     ..Default::default()
                 },
-                TextColor(OFF_WHITE.into()),
+                TextColor(OFF_WHITE),
                 Node {
                     margin: UiRect::bottom(Val::Px(8.0)),
                     ..Default::default()
@@ -91,7 +91,7 @@ pub(super) fn sidebar() -> impl Bundle {
                     font_size: 14.0,
                     ..Default::default()
                 },
-                TextColor(LABEL_TEXT.into()),
+                TextColor(LABEL_TEXT),
                 Node {
                     flex_direction: FlexDirection::Column,
                     ..Default::default()

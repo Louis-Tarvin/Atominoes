@@ -315,7 +315,6 @@ fn handle_collision(
 
         // Antimatter phases through other atoms
         (AtomType::Antimatter, _) | (_, AtomType::Antimatter) => {
-            return;
         }
     }
 }

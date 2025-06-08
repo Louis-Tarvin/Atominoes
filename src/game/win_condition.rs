@@ -106,7 +106,7 @@ fn check_win_condition(
             .expect("Current level should exist")
             .goal
         {
-            super::level::LevelGoal::None => return,
+            super::level::LevelGoal::None => (),
             super::level::LevelGoal::ReachPositions(_) => {
                 if goals.is_empty() {
                     next_state.set(GameState::LevelComplete);

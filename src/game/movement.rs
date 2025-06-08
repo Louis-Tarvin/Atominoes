@@ -30,7 +30,7 @@ impl Movement {
     }
 
     pub fn velocity(&self) -> Vec2 {
-        self.direction.to_velocity() * self.speed
+        self.direction.as_velocity() * self.speed
     }
 }
 
@@ -57,7 +57,7 @@ pub enum CardinalDirection {
 }
 
 impl CardinalDirection {
-    pub fn to_velocity(&self) -> Vec2 {
+    pub fn as_velocity(&self) -> Vec2 {
         match self {
             CardinalDirection::N => Vec2::new(0.0, 1.0),
             CardinalDirection::E => Vec2::new(1.0, 0.0),
