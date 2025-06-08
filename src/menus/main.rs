@@ -5,7 +5,13 @@ use std::time::Duration;
 use bevy::prelude::*;
 use bevy_easings::Ease;
 
-use crate::{asset_tracking::LoadResource, menus::Menu, theme::widget};
+use crate::{
+    asset_tracking::{LoadResource, ResourceHandles},
+    game::MenuSelection,
+    menus::Menu,
+    screens::Screen,
+    theme::widget,
+};
 
 pub(super) fn plugin(app: &mut App) {
     app.register_type::<MainMenuAssets>();
@@ -58,7 +64,8 @@ fn spawn_main_menu(mut commands: Commands, assets: Res<MainMenuAssets>) {
         #[cfg(not(target_family = "wasm"))]
         children![
             title_bundle,
-            widget::button("Play", open_level_select_menu),
+            widget::button("Start", start_game),
+            widget::button("Level Select", open_level_select_menu),
             widget::button("Settings", open_settings_menu),
             widget::button("Credits", open_credits_menu),
             widget::button("Exit", exit_app),
@@ -66,11 +73,26 @@ fn spawn_main_menu(mut commands: Commands, assets: Res<MainMenuAssets>) {
         #[cfg(target_family = "wasm")]
         children![
             title_bundle,
-            widget::button("Play", open_level_select_menu),
+            widget::button("Start", start_game),
+            widget::button("Level Select", open_level_select_menu),
             widget::button("Settings", open_settings_menu),
             widget::button("Credits", open_credits_menu),
         ],
     ));
+}
+
+fn start_game(
+    _: Trigger<Pointer<Click>>,
+    resource_handles: Res<ResourceHandles>,
+    mut next_screen: ResMut<NextState<Screen>>,
+    mut menu_selection: ResMut<MenuSelection>,
+) {
+    *menu_selection = MenuSelection::Level(0);
+    if resource_handles.is_all_done() {
+        next_screen.set(Screen::Gameplay);
+    } else {
+        next_screen.set(Screen::Loading);
+    }
 }
 
 fn open_settings_menu(_: Trigger<Pointer<Click>>, mut next_menu: ResMut<NextState<Menu>>) {
