@@ -75,6 +75,10 @@ impl CurrentLevel {
             CurrentLevel::Editing(_) => None,
         }
     }
+
+    pub fn is_editing(&self) -> bool {
+        matches!(self, CurrentLevel::Editing(_))
+    }
 }
 
 #[derive(Debug, Error)]

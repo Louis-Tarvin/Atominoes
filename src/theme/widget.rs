@@ -143,7 +143,7 @@ where
         (
             Node {
                 width: Px(380.0),
-                height: Px(80.0),
+                height: Px(70.0),
                 padding: UiRect::all(Px(15.0)),
                 align_items: AlignItems::Center,
                 justify_content: JustifyContent::Center,
@@ -151,7 +151,7 @@ where
             },
             BorderRadius::MAX,
         ),
-        30.0,
+        25.0,
     )
 }
 

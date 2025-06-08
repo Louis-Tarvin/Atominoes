@@ -12,19 +12,26 @@ use crate::{
     theme::{palette::*, widget},
 };
 
-#[derive(Component)]
-struct UiSidebar;
-
-#[derive(Component)]
-pub(super) struct UiSidebarText;
-
-#[derive(Component)]
-pub(super) struct UiSidebarHeader;
-
-pub(super) fn sidebar() -> impl Bundle {
+pub(super) fn sidebar(current_level: &CurrentLevel, level_assets: &Assets<Level>) -> impl Bundle {
+    let text = if let Ok(level) = current_level.get_level(level_assets) {
+        format!(
+            "{}\n\nControls:\n<esc>: pause\n<spacebar>: start/stop\n Left click and drag an atom from the tray to place it.\nRight click to remove a placed atom.",
+            level.sidebar_text
+        )
+    } else {
+        "Sandbox".to_string()
+    };
+    let heading = if let CurrentLevel::Loaded {
+        level_handle: _,
+        level_index,
+    } = *current_level
+    {
+        format!("Level {}", level_index + 1)
+    } else {
+        "Sandbox".to_string()
+    };
     (
         Name::new("Sidebar"),
-        UiSidebar,
         Node::default(),
         Node {
             position_type: PositionType::Absolute,
@@ -71,8 +78,7 @@ pub(super) fn sidebar() -> impl Bundle {
         children![
             (
                 Name::new("Sidebar Header"),
-                Text::new("Level"),
-                UiSidebarHeader,
+                Text::new(heading),
                 TextFont {
                     font_size: 28.0,
                     ..Default::default()
@@ -85,8 +91,7 @@ pub(super) fn sidebar() -> impl Bundle {
             ),
             (
                 Name::new("Sidebar Text"),
-                UiSidebarText,
-                Text::new("Loading..."),
+                Text::new(text),
                 TextFont {
                     font_size: 14.0,
                     ..Default::default()
@@ -104,39 +109,6 @@ pub(super) fn sidebar() -> impl Bundle {
     )
 }
 
-pub(super) fn update_sidebar_text(
-    current_level: Res<CurrentLevel>,
-    level_assets: Res<Assets<Level>>,
-    mut text_query: Query<&mut Text, With<UiSidebarText>>,
-) {
-    if let Ok(mut text) = text_query.single_mut() {
-        if let Ok(level) = current_level.get_level(&level_assets) {
-            text.0 = format!(
-                "{}\n\nControls:\n<esc>: pause\n<spacebar>: start/stop\n Left click and drag an atom from the tray to place it.\nRight click to remove a placed atom.",
-                level.sidebar_text
-            );
-        } else {
-            text.0 = "Sandbox".to_string();
-        }
-    }
-}
-
-pub(super) fn update_sidebar_header(
-    current_level: Res<CurrentLevel>,
-    mut text_query: Query<&mut Text, With<UiSidebarHeader>>,
-) {
-    if let Ok(mut text) = text_query.single_mut() {
-        if let CurrentLevel::Loaded {
-            level_handle: _,
-            level_index,
-        } = *current_level
-        {
-            text.0 = format!("Level {}", level_index + 1);
-        } else {
-            text.0 = "Sandbox".to_string();
-        }
-    }
-}
 fn start_stop(
     _: Trigger<Pointer<Click>>,
     current_state: Res<State<GameState>>,

@@ -1,5 +1,5 @@
 (
-    sidebar_text: "Welcome to Atom Smashers Inc. What do we do? We smash atoms. For science! As the new hire, it's your job to carry out the experiments cooked up by the research team. Validate hypotheses, discover new elements, yadda yadda. Anyway, to get you warmed up, place a basic atom along the path of the other basic atom and start the experiment to create the next tier of atom.",
+    sidebar_text: "Welcome to Atom Smashers Inc. What do we do? We smash atoms. For science! As the new hire, it's your job to carry out the experiments cooked up by the research team. Validate hypotheses, discover new elements, yadda yadda. Anyway, I'm your manager. I'll be guiding you through the process. To start off, place a basic atom along the path of the other basic atom and start the experiment to create the next tier of atom.",
     level_complete_text: "Well done, [employee-name-here]!",
     atoms: [
         (

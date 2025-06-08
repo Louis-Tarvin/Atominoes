@@ -137,10 +137,12 @@ fn handle_place_atom(
         );
         let mut entity = commands.spawn(atom(*atom_type, grid_pos, &atom_assets));
 
-        if let CurrentLevel::Editing(level) = &mut *current_level {
-            // If we're editing a level, add the atom to the level data
-            level.atoms.push(LevelAtom::new(*atom_type, grid_pos));
-            entity.insert(LevelEntity);
+        if current_level.is_editing() {
+            if let CurrentLevel::Editing(level) = &mut *current_level {
+                // If we're editing a level, add the atom to the level data
+                level.atoms.push(LevelAtom::new(*atom_type, grid_pos));
+                entity.insert(LevelEntity);
+            }
         } else {
             placed_atoms.add(*atom_type, grid_pos);
         }
@@ -212,16 +214,18 @@ fn delete_atom_on_rightclick(
                             transform.translation.x.round() as i32,
                             transform.translation.y.round() as i32,
                         );
-                        if let CurrentLevel::Editing(level) = &mut *current_level {
-                            if nearest_grid_pos == nearest_atom_grid_pos {
-                                commands.entity(entity).despawn();
-                                commands.spawn(sound_effect(audio_assets.click.clone()));
-                                if level.remove_atom_at_position(nearest_grid_pos).is_none() {
-                                    warn!(
-                                        "Deleted atom while editing a level, but the atom didn't exist in the level!"
-                                    );
+                        if current_level.is_editing() {
+                            if let CurrentLevel::Editing(level) = &mut *current_level {
+                                if nearest_grid_pos == nearest_atom_grid_pos {
+                                    commands.entity(entity).despawn();
+                                    commands.spawn(sound_effect(audio_assets.click.clone()));
+                                    if level.remove_atom_at_position(nearest_grid_pos).is_none() {
+                                        warn!(
+                                            "Deleted atom while editing a level, but the atom didn't exist in the level!"
+                                        );
+                                    }
+                                    return;
                                 }
-                                return;
                             }
                         } else if maybe_level_entity.is_none()
                             && nearest_grid_pos == nearest_atom_grid_pos
