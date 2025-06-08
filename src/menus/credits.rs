@@ -37,7 +37,6 @@ fn assets() -> impl Bundle {
             "Bevy logo",
             "All rights reserved by the Bevy Foundation, permission granted for splash screen use when unmodified",
         ],
-        ["Music", "louisNivrat"],
     ])
 }
 

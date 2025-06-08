@@ -15,7 +15,7 @@ pub(super) fn plugin(app: &mut App) {
 
 fn spawn_next_level_menu(mut commands: Commands, audio_assets: Res<AudioAssets>) {
     commands.spawn((
-        widget::ui_root("Next Level Menu"),
+        widget::bouncy_ui_root("Next Level Menu"),
         GlobalZIndex(2),
         StateScoped(GameState::LevelComplete),
         children![

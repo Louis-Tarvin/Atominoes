@@ -455,6 +455,7 @@ version = "0.1.0"
 dependencies = [
  "bevy",
  "bevy-inspector-egui",
+ "bevy_easings",
  "log",
  "rand",
  "ron 0.10.1",
@@ -710,6 +711,25 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "843c7ce266dfc46e49d01fbf9aa1829d33b70a1859b9ed6a526ac03070c52e97"
 dependencies = [
  "bevy_internal",
+]
+
+[[package]]
+name = "bevy_easings"
+version = "0.16.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "065728c8696f8cbab218f32dd2a39d7187b5cc8859ddcfcc2846ae0ac7f4d2aa"
+dependencies = [
+ "bevy_app",
+ "bevy_color",
+ "bevy_ecs",
+ "bevy_math",
+ "bevy_render",
+ "bevy_sprite",
+ "bevy_text",
+ "bevy_time",
+ "bevy_transform",
+ "bevy_ui",
+ "interpolation",
 ]
 
 [[package]]
@@ -2898,6 +2918,12 @@ dependencies = [
  "quote",
  "syn",
 ]
+
+[[package]]
+name = "interpolation"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e9c13ae9d91148fcb4aab6654c4c2a7d02a15395ea9e23f65170f175f8b269ce"
 
 [[package]]
 name = "io-kit-sys"

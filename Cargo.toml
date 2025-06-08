@@ -21,6 +21,7 @@ bevy-inspector-egui = "0.31.0"
 serde = "1.0.219"
 thiserror = "2.0.12"
 ron = "0.10.1"
+bevy_easings = "0.16.0"
 
 # Your web builds will start failing if you add a dependency that pulls in `getrandom` v0.3+.
 # To fix this, you should tell `getrandom` to use the `wasm_js` backend on Wasm.

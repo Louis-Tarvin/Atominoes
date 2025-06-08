@@ -1,4 +1,7 @@
+use std::time::Duration;
+
 use bevy::prelude::*;
+use bevy_easings::Ease;
 
 use crate::{
     game::{
@@ -22,10 +25,11 @@ pub(super) fn sidebar() -> impl Bundle {
     (
         Name::new("Sidebar"),
         UiSidebar,
+        Node::default(),
         Node {
             position_type: PositionType::Absolute,
-            left: Val::Px(0.0),
             top: Val::Px(0.0),
+            left: Val::Px(-320.0),
             width: Val::Percent(30.0),
             max_width: Val::Px(320.0),
             height: Val::Percent(100.0),
@@ -38,7 +42,30 @@ pub(super) fn sidebar() -> impl Bundle {
             row_gap: Val::Px(16.0),
             border: UiRect::right(Val::Px(2.0)),
             ..Default::default()
-        },
+        }
+        .ease_to(
+            Node {
+                position_type: PositionType::Absolute,
+                top: Val::Px(0.0),
+                left: Val::Px(0.0),
+                width: Val::Percent(30.0),
+                max_width: Val::Px(320.0),
+                height: Val::Percent(100.0),
+                overflow: Overflow {
+                    x: OverflowAxis::Hidden,
+                    ..Default::default()
+                },
+                padding: UiRect::all(Val::Px(24.0)),
+                flex_direction: FlexDirection::Column,
+                row_gap: Val::Px(16.0),
+                border: UiRect::right(Val::Px(2.0)),
+                ..Default::default()
+            },
+            bevy_easings::EaseFunction::BounceOut,
+            bevy_easings::EasingType::Once {
+                duration: Duration::from_millis(1500),
+            },
+        ),
         BorderColor(ACCENT.into()),
         BackgroundColor(BACKGROUND.into()),
         children![
@@ -70,7 +97,7 @@ pub(super) fn sidebar() -> impl Bundle {
                     ..Default::default()
                 },
             ),
-            widget::sidebar_button("Start / Stop simulation", start_stop),
+            widget::sidebar_button("Start / Stop experiment", start_stop),
             widget::sidebar_button("Reset level", reset),
             widget::sidebar_button("Quit to title", quit_to_title),
         ],
@@ -84,7 +111,10 @@ pub(super) fn update_sidebar_text(
 ) {
     if let Ok(mut text) = text_query.single_mut() {
         if let Ok(level) = current_level.get_level(&level_assets) {
-            text.0 = format!("{}", level.sidebar_text);
+            text.0 = format!(
+                "{}\n\nControls:\n<esc>: pause\n<spacebar>: start/stop\n Left click and drag an atom from the tray to place it.\nRight click to remove a placed atom.",
+                level.sidebar_text
+            );
         } else {
             text.0 = "Sandbox".to_string();
         }

@@ -1,12 +1,13 @@
 //! Helper functions for creating common widgets.
 
-use std::borrow::Cow;
+use std::{borrow::Cow, time::Duration};
 
 use bevy::{
     ecs::{spawn::SpawnWith, system::IntoObserverSystem},
     prelude::*,
     ui::Val::*,
 };
+use bevy_easings::Ease;
 
 use crate::theme::{interaction::InteractionPalette, palette::*};
 
@@ -24,6 +25,42 @@ pub fn ui_root(name: impl Into<Cow<'static, str>>) -> impl Bundle {
             row_gap: Px(20.0),
             ..default()
         },
+        // Don't block picking events for other UI roots.
+        Pickable::IGNORE,
+    )
+}
+pub fn bouncy_ui_root(name: impl Into<Cow<'static, str>>) -> impl Bundle {
+    (
+        Name::new(name),
+        Node::default(),
+        Node {
+            position_type: PositionType::Absolute,
+            width: Percent(100.0),
+            height: Percent(100.0),
+            align_items: AlignItems::Center,
+            justify_content: JustifyContent::Center,
+            flex_direction: FlexDirection::Column,
+            row_gap: Px(20.0),
+            top: Percent(-100.0),
+            ..default()
+        }
+        .ease_to(
+            Node {
+                position_type: PositionType::Absolute,
+                width: Percent(100.0),
+                height: Percent(100.0),
+                align_items: AlignItems::Center,
+                justify_content: JustifyContent::Center,
+                flex_direction: FlexDirection::Column,
+                row_gap: Px(20.0),
+                top: Percent(0.0),
+                ..default()
+            },
+            bevy_easings::EaseFunction::CubicOut,
+            bevy_easings::EasingType::Once {
+                duration: Duration::from_millis(800),
+            },
+        ),
         // Don't block picking events for other UI roots.
         Pickable::IGNORE,
     )
